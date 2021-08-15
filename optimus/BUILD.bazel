@@ -1,0 +1,65 @@
+""" Builds optimus.
+"""
+
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+
+bool_flag(
+    name = "debug",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "debug_on",
+    flag_values = {":debug": "True"},
+)
+
+cc_library(
+    name = "common",
+    hdrs = ["debug.h"],
+    defines = select({
+        ":debug_on": ["OPTIMUS_DEBUG"],
+        "//conditions:default": [],
+    }),
+)
+
+cc_library(
+    name = "mhe",
+    hdrs = [
+        "mhe_qp_solver.h",
+        "nmhe_solver.h",
+    ],
+    deps = [
+        ":common",
+        "//third_party:blas_lapack",
+        "@eigen",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "openblas_config",
+    srcs = ["openblas_config.cc"],
+    hdrs = ["openblas_config.h"],
+    copts = [
+        "-std=c++17",
+        "-Wall", "-Wextra", "-Wpedantic", "-Wfloat-equal", "-Werror",
+    ],
+    linkopts = ["-lopenblas"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "mpc",
+    hdrs = [
+        "nmpc_condensing_solver.h",
+    ],
+    deps = [
+        ":common",
+        "@com_github_mvukov_qpoases_embedded//:qpoases_embedded",
+        "@eigen",
+    ] + select({
+        ":debug_on": ["@com_github_mvukov_qpoases_embedded//:utils"],
+        "//conditions:default": [],
+    }),
+    visibility = ["//visibility:public"],
+)

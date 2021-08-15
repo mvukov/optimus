@@ -1,0 +1,11 @@
+""" Defines 3rd-party libraries.
+"""
+
+cc_library(
+    name = "blas_lapack",
+    hdrs = [
+        "blas_f77.h",
+        "lapack_f77.h",
+    ],
+    visibility = ["//visibility:public"],
+)
