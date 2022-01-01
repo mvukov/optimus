@@ -1,0 +1,18 @@
+""" Defines benchmarks.
+"""
+
+cc_binary(
+    name = "benchmark_mhe_qp_solver",
+    srcs = [
+        "benchmark_mhe_qp_solver.cc",
+    ],
+    copts = [
+        "-std=c++17",
+        "-Wall", "-Wextra", "-Wpedantic", "-Wfloat-equal", "-Werror",
+    ],
+    deps = [
+        "//optimus:mhe",
+        "//optimus:openblas_config",
+        "@com_github_google_benchmark//:benchmark",
+    ],
+)
