@@ -39,7 +39,7 @@ _PYTHON_INTERPRETER = "python3.8"
 pip_parse(
     name = "optimus_pip_deps",
     python_interpreter = _PYTHON_INTERPRETER,
-    requirements_lock = "//test:requirements_lock.txt",
+    requirements_lock = "//:requirements_lock.txt",
 )
 
 load(
