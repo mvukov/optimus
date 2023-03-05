@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_import")
+
+cc_import(
+    name = "openblas",
+    shared_library = "libopenblas_nonthreaded_haswell-r0.3.21.so",
+    visibility = ["//visibility:public"],
+)

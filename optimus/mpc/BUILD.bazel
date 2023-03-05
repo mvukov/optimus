@@ -1,0 +1,32 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("//repositories:cc_defs.bzl", "COPTS")
+
+cc_library(
+    name = "mpc",
+    hdrs = [
+        "nmpc_condensing_solver.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//optimus:common",
+        "@com_github_mvukov_qpoases_embedded//:qpoases_embedded",
+        "@eigen",
+    ] + select({
+        "//optimus:debug_on": ["@com_github_mvukov_qpoases_embedded//:utils"],
+        "//conditions:default": [],
+    }),
+)
+
+cc_test(
+    name = "tests",
+    srcs = [
+        "nmpc_condensing_solver_tests.cc",
+    ],
+    copts = COPTS,
+    deps = [
+        ":mpc",
+        "//optimus/testing:eigen_matchers",
+        "@com_google_googletest//:gtest_main",
+        "@eigen",
+    ],
+)

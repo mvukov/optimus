@@ -1,0 +1,4 @@
+exports_files([
+    "defs.bzl",
+    "pytest_wrapper.py",
+])

@@ -1,2 +1,8 @@
 casadi==3.5.4
+coverage
+matplotlib
 numpy
+PySide6
+pytest
+pytest-cov
+scikit-fmm

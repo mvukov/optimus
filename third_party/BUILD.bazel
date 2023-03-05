@@ -1,6 +1,8 @@
 """ Defines 3rd-party libraries.
 """
 
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 cc_library(
     name = "blas_lapack",
     hdrs = [

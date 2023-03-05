@@ -1,0 +1,13 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+licenses(["notice"])
+
+exports_files(["LICENSE"])
+
+cc_library(
+    name = "pybind11",
+    hdrs = glob(["include/pybind11/**/*.h"]),
+    includes = ["include"],
+    visibility = ["//visibility:public"],
+    deps = ["@optimus_python//:python_headers"],
+)

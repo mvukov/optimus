@@ -1,3 +1,5 @@
+build --noincompatible_use_platforms_repo_for_constraints
+
 build:opt -c opt
 build:opt --copt=-O3
 

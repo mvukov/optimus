@@ -1,0 +1,80 @@
+load("@optimus_pip_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("//repositories:cc_defs.bzl", "COPTS")
+load("//repositories:generator.bzl", "generator")
+load("//repositories:python_extension.bzl", "pybind11_extension")
+
+generator(
+    name = "example_primitives",
+    args = [
+        "--grid_connectivity=32",
+        "--max_angle_idx_diff=2",
+        "--min_radius_grid=4.95",
+    ],
+    extension = ".cc",
+    generator = "//optimus/path_planning:primitive_exporter",
+)
+
+pybind11_extension(
+    name = "py_path_planning",
+    srcs = [
+        "py_path_planning.cc",
+        ":example_primitives",
+    ],
+    copts = COPTS,
+    deps = [
+        "//optimus/path_planning",
+    ],
+)
+
+py_library(
+    name = "utils",
+    srcs = [
+        "utils.py",
+    ],
+    data = [
+        "@test_data_csail//file",
+    ],
+    deps = [
+        requirement("numpy"),
+        requirement("pillow"),
+    ],
+)
+
+py_binary(
+    name = "run_astar_se2_planner",
+    srcs = ["run_astar_se2_planner.py"],
+    deps = [
+        ":py_path_planning",
+        ":utils",
+        requirement("matplotlib"),
+        requirement("numpy"),
+        requirement("PySide6"),
+        requirement("scikit-fmm"),
+    ],
+)
+
+py_binary(
+    name = "visualize_primitives",
+    srcs = ["visualize_primitives.py"],
+    deps = [
+        "//optimus/path_planning:primitive_generator",
+        requirement("matplotlib"),
+        requirement("PySide6"),
+    ],
+)
+
+py_binary(
+    name = "run_astar_grid_2d_planner",
+    srcs = ["run_astar_grid_2d_planner.py"],
+    data = [
+        "@test_data_csail//file",
+    ],
+    deps = [
+        ":py_path_planning",
+        ":utils",
+        requirement("matplotlib"),
+        requirement("numpy"),
+        requirement("PySide6"),
+    ],
+)

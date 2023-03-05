@@ -17,12 +17,12 @@
 #ifdef OPTIMUS_DEBUG
 #include <iostream>
 
-#define DEBUG_OPTIMUS(stuff)                                      \
-  std::cout << "[OPTIMUS] " << __FILE__ << ":" << __LINE__ << ":" \
+#define OPTIMUS_PRINT(stuff)                                      \
+  std::cerr << "[OPTIMUS] " << __FILE__ << ":" << __LINE__ << ":" \
             << __FUNCTION__ << ": " << stuff << std::endl;
 
 #else  // OPTIMUS_DEBUG
-#define DEBUG_OPTIMUS(stuff)
+#define OPTIMUS_PRINT(stuff)
 #endif  // OPTIMUS_DEBUG
 
 #endif  // OPTIMUS_DEBUG_H_

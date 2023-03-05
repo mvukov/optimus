@@ -1,3 +1,4 @@
+// NOLINT(legal/copyright)
 #ifndef THIRD_PARTY_LAPACK_F77_H_
 #define THIRD_PARTY_LAPACK_F77_H_
 

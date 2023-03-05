@@ -1,0 +1,66 @@
+load("@optimus_pip_deps//:requirements.bzl", "requirement")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+load("@rules_python//python:defs.bzl", "py_binary")
+load("//repositories:cc_defs.bzl", "COPTS")
+load("//repositories:generator.bzl", "generator")
+
+cc_library(
+    name = "mhe",
+    hdrs = [
+        "mhe_qp_solver.h",
+        "nmhe_solver.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//optimus:common",
+        "//third_party:blas_lapack",
+        "@eigen",
+    ],
+)
+
+py_binary(
+    name = "generate_mhe_qp_test_vectors",
+    srcs = [
+        "generate_mhe_qp_test_vectors.py",
+    ],
+    deps = [
+        requirement("casadi"),
+        requirement("numpy"),
+    ],
+)
+
+generator(
+    name = "mhe_qp_test_data",
+    extension = ".h",
+    generator = ":generate_mhe_qp_test_vectors",
+)
+
+cc_test(
+    name = "tests",
+    srcs = [
+        "mhe_qp_solver_tests.cc",
+        ":mhe_qp_test_data",
+    ],
+    copts = COPTS,
+    includes = ["include"],
+    deps = [
+        ":mhe",
+        "//optimus/testing:eigen_matchers",
+        "//third_party/openblas",
+        "@com_google_googletest//:gtest_main",
+        "@eigen",
+    ],
+)
+
+cc_binary(
+    name = "benchmark_mhe_qp_solver",
+    srcs = [
+        "benchmark_mhe_qp_solver.cc",
+    ],
+    copts = COPTS,
+    deps = [
+        ":mhe",
+        "//third_party/openblas",
+        "@com_github_google_benchmark//:benchmark",
+    ],
+)

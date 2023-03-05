@@ -1,4 +1,6 @@
 exports_files([
+    "cc_defs.bzl",
     "deps.bzl",
+    "generator.bzl",
     "repositories.bzl",
 ])
