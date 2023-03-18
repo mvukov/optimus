@@ -132,7 +132,6 @@ PYBIND11_MODULE(py_path_planning, m) {
       .def_readwrite("theta", &MotionPrimitive2D::theta)
       .def_readwrite("swath_x", &MotionPrimitive2D::swath_x)
       .def_readwrite("swath_y", &MotionPrimitive2D::swath_y)
-      .def_readwrite("start_angle_idx", &MotionPrimitive2D::start_angle_idx)
       .def_readwrite("end_angle_idx", &MotionPrimitive2D::end_angle_idx)
       .def_readwrite("end_x_idx", &MotionPrimitive2D::end_x_idx)
       .def_readwrite("end_y_idx", &MotionPrimitive2D::end_y_idx);

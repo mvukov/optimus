@@ -63,7 +63,8 @@ bool SE2Environment::Validate() const {
 }
 
 bool SE2Environment::Initialize() {
-  const auto num_angles = action_set_->angles.size();
+  OPTIMUS_CHECK(obstacle_data_ != nullptr);
+
   // TODO(mvukov) For num_angles != 2^n the actual state space is in fact
   // smaller.
   state_space_size_ = obstacle_data_->size() * (angle_mask_ + 1);
@@ -71,12 +72,19 @@ bool SE2Environment::Initialize() {
     return false;
   }
 
-  std::vector<int> angles_to_num_neighbors(num_angles, 0);
-  for (const auto& p : action_set_->motion_primitives) {
-    ++angles_to_num_neighbors.at(p.start_angle_idx);
+  const auto& primitive_group_start_indices =
+      action_set_->primitive_group_start_indices;
+  const int num_angles = primitive_group_start_indices.size();
+  const int num_primitives = action_set_->motion_primitives.size();
+  max_num_neighbors_ = 0;
+  for (int el = 0; el < num_angles - 1; ++el) {
+    max_num_neighbors_ =
+        std::max(max_num_neighbors_, primitive_group_start_indices[el + 1] -
+                                         primitive_group_start_indices[el]);
   }
-  max_num_neighbors_ = *(std::max_element(angles_to_num_neighbors.begin(),
-                                          angles_to_num_neighbors.end()));
+  max_num_neighbors_ =
+      std::max(max_num_neighbors_,
+               num_primitives - primitive_group_start_indices[num_angles - 1]);
 
   edges_to_motion_primitive_indices_.clear();
   edges_to_motion_primitive_indices_.reserve(state_space_size_ *
@@ -87,10 +95,12 @@ bool SE2Environment::Initialize() {
 void SE2Environment::GetNeighborsAndCosts(
     int pivot, std::vector<int>& neighbors,
     std::vector<float>& pivot_to_neighbor_costs) {
+  OPTIMUS_CHECK(obstacle_data_ != nullptr);
+
   std::fill(neighbors.begin(), neighbors.end(), kInvalidIndex);
   std::fill(pivot_to_neighbor_costs.begin(), pivot_to_neighbor_costs.end(),
             kInfCost);
-  if (static_cast<int>(neighbors.size()) != max_num_neighbors_ ||
+  if (static_cast<int>(neighbors.size()) != GetMaxNumNeighbors() ||
       neighbors.size() != pivot_to_neighbor_costs.size()) {
     return;
   }
@@ -100,16 +110,19 @@ void SE2Environment::GetNeighborsAndCosts(
 
   const int grid_width = obstacle_data_->cols();
   const int grid_height = obstacle_data_->rows();
+
+  const int num_angles = action_set_->angles.size();
+  const auto primitive_index_start =
+      action_set_->primitive_group_start_indices.at(angle_index);
+  const int primitive_index_end =
+      angle_index < num_angles - 1
+          ? action_set_->primitive_group_start_indices.at(angle_index + 1)
+          : action_set_->motion_primitives.size();
+
   int offset = 0;
-  for (int primitive_index = 0;
-       primitive_index <
-           static_cast<int>(action_set_->motion_primitives.size()) &&
-       offset < max_num_neighbors_;
-       ++primitive_index) {
+  for (int primitive_index = primitive_index_start;
+       primitive_index < primitive_index_end; ++primitive_index) {
     const auto& p = action_set_->motion_primitives[primitive_index];
-    if (p.start_angle_idx != angle_index) {
-      continue;
-    }
 
     bool discard = false;
     const auto swath_size = p.swath_x.size();

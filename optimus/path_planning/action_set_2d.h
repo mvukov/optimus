@@ -21,17 +21,16 @@ namespace optimus {
 struct MotionPrimitive2D {
   static constexpr int kMinLength = 2;
 
+  std::vector<int> swath_x;
+  std::vector<int> swath_y;
   float length = 0;
   float abs_angle_diff = 0;
+  int end_x_idx = 0;
+  int end_y_idx = 0;
+  int end_angle_idx = 0;
   std::vector<float> x;
   std::vector<float> y;
   std::vector<float> theta;
-  std::vector<int> swath_x;
-  std::vector<int> swath_y;
-  int start_angle_idx = 0;
-  int end_angle_idx = 0;
-  int end_x_idx = 0;
-  int end_y_idx = 0;
 
   [[nodiscard]] bool Validate() const { return true; }
 };
@@ -39,6 +38,10 @@ struct MotionPrimitive2D {
 struct ActionSet2D {
   // Sorted with unique values, all values in (-pi, pi].
   std::vector<float> angles;
+  // The n-th value is index in motion_primitives corresponding to the start
+  // of the group of primitives with the n-th start angle in angles array.
+  std::vector<int> primitive_group_start_indices;
+  // Primitives are grouped and sorted for start angle indices.
   std::vector<MotionPrimitive2D> motion_primitives;
 
   [[nodiscard]] bool Validate() const;

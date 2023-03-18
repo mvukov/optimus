@@ -90,6 +90,12 @@ def main():
   goal = Pose2D(146, 436, numpy.pi / 2)
 
   try:
+    print('First run, takes longer because of planner memory allocation.')
+    path = planner.plan_path(distance_field, start, goal)
+    print(f'Planning time: {planner.planning_time:.3f} seconds.')
+    print(f'Number of expansions: {planner.num_expansions}.')
+
+    print('Second run, takes much less time as planner memory is allocated.')
     path = planner.plan_path(distance_field, start, goal)
     print(f'Planning time: {planner.planning_time:.3f} seconds.')
     print(f'Number of expansions: {planner.num_expansions}.')

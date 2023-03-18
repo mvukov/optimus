@@ -38,7 +38,7 @@ PlannerStatus AStarSE2Planner::PlanPath(
     return PlannerStatus::kSuccess;
   }
 
-  std::vector<int> path_indices;  // TODO(mvukov) Make this a member variable?
+  std::vector<int> path_indices;
   if (auto status = algorithm_.PlanPath(start_index, goal_index, user_callback,
                                         path_indices);
       status != PlannerStatus::kSuccess) {

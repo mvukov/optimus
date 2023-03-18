@@ -84,6 +84,8 @@ namespace optimus {{
 static const ActionSet2D g_{action_set_name} = {{
   // Sorted primitive angles (-pi, pi].
   {angles},
+  // start_angle_indices_to_group_start_indices
+  {primitive_group_start_indices},
   // Motion primitives:
   {{
 {primitives}
@@ -99,34 +101,32 @@ const auto& get_{action_set_name}() {{ return g_{action_set_name}; }}
 
 CPP_MOTION_PRIMITIVE_TEMPLATE = """{{
   // primitive {index}
+  // swath_x
+  {swath_x},
+  // swath_y
+  {swath_y},
   // length
   {length},
   // abs_angle_diff
   {abs_angle_diff},
+  // end_x_idx
+  {end_x_idx},
+  // end_y_idx
+  {end_y_idx},
+  // end_angle_idx
+  {end_angle_idx},
   // x
   {x},
   // y
   {y},
   // theta
   {theta},
-  // swath_x
-  {swath_x},
-  // swath_y
-  {swath_y},
-  // start_angle_idx
-  {start_angle_idx},
-  // end_angle_idx
-  {end_angle_idx},
-  // end_x_idx
-  {end_x_idx},
-  // end_y_idx
-  {end_y_idx},
 }}"""
 
 
 def export_motion_primitives(angles: numpy.ndarray,
                              motion_primitives: List[MotionPrimitive2D],
-                             file_name: str) -> None:
+                             max_angle_idx_diff: int, file_name: str) -> None:
 
   def export(value) -> str:
     if isinstance(value, numpy.ndarray):
@@ -143,14 +143,22 @@ def export_motion_primitives(angles: numpy.ndarray,
         theta=export(p.theta),
         swath_x=export(p.swath_x),
         swath_y=export(p.swath_y),
-        start_angle_idx=export(p.start_angle_idx),
         end_angle_idx=export(p.end_angle_idx),
         end_x_idx=export(p.end_x_idx),
         end_y_idx=export(p.end_y_idx))
 
   exported_primitives = []
+  current_start_angle_idx = None
+  visited_start_angle_indices = []
+  primitive_group_start_indices = [-1] * len(angles)
   for idx, p in enumerate(motion_primitives):
     exported_primitives.append(dump_motion_primitive(idx, p))
+    start_angle_idx = p.start_angle_idx
+    if current_start_angle_idx != start_angle_idx:
+      assert start_angle_idx not in visited_start_angle_indices
+      primitive_group_start_indices[start_angle_idx] = idx
+      visited_start_angle_indices.append(start_angle_idx)
+      current_start_angle_idx = start_angle_idx
 
   header_guard = file_name.upper()
   header_guard = ''.join([c if c.isalnum() else '_' for c in header_guard])
@@ -160,6 +168,8 @@ def export_motion_primitives(angles: numpy.ndarray,
       header_guard=header_guard,
       action_set_name=action_set_name,
       angles=export(angles),
+      primitive_group_start_indices=export(
+          numpy.asarray(primitive_group_start_indices)),
       primitives=',\n'.join(exported_primitives))
   with open(file_name, 'w', encoding='utf-8') as stream:
     stream.write(output_content)
@@ -184,7 +194,8 @@ def main():
 
   angles, motion_primitives = generate_motion_primitives_for_export(
       args.grid_connectivity, args.min_radius_grid, args.max_angle_idx_diff)
-  export_motion_primitives(angles, motion_primitives, args.output)
+  export_motion_primitives(angles, motion_primitives, args.max_angle_idx_diff,
+                           args.output)
 
 
 if __name__ == '__main__':
