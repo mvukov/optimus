@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <algorithm>
 #include <memory>
 
 #include "gmock/gmock.h"
@@ -62,8 +63,14 @@ class TestSE2Environment : public Test {
     auto& angles = action_set_.angles;
     angles = {-3.0 * M_PI / 4, -M_PI / 2, -M_PI / 4, 0,
               M_PI / 4,        M_PI / 2,  M_PI};
-    auto& primitives = action_set_.motion_primitives;
     const int num_angles = angles.size();
+    auto& primitive_group_start_indices =
+        action_set_.primitive_group_start_indices;
+    primitive_group_start_indices.resize(num_angles);
+    std::generate(primitive_group_start_indices.begin(),
+                  primitive_group_start_indices.end(),
+                  [n = 0]() mutable { return n++; });
+    auto& primitives = action_set_.motion_primitives;
     primitives.resize(num_angles);
     for (int el = 0; el < num_angles; ++el) {
       auto& p = primitives.at(el);
@@ -75,7 +82,6 @@ class TestSE2Environment : public Test {
       p.theta = {angle, angle};
       p.swath_x = {0};
       p.swath_y = {0};
-      p.start_angle_idx = el;
       p.end_angle_idx = el;
       p.end_x_idx = 1;
       p.end_y_idx = 1;
