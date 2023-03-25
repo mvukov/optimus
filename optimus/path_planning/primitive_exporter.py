@@ -84,7 +84,7 @@ namespace optimus {{
 static const ActionSet2D g_{action_set_name} = {{
   // Sorted primitive angles (-pi, pi].
   {angles},
-  // start_angle_indices_to_group_start_indices
+  // primitive_group_start_indices
   {primitive_group_start_indices},
   // Motion primitives:
   {{
@@ -126,7 +126,7 @@ CPP_MOTION_PRIMITIVE_TEMPLATE = """{{
 
 def export_motion_primitives(angles: numpy.ndarray,
                              motion_primitives: List[MotionPrimitive2D],
-                             max_angle_idx_diff: int, file_name: str) -> None:
+                             file_name: str) -> None:
 
   def export(value) -> str:
     if isinstance(value, numpy.ndarray):
@@ -194,8 +194,7 @@ def main():
 
   angles, motion_primitives = generate_motion_primitives_for_export(
       args.grid_connectivity, args.min_radius_grid, args.max_angle_idx_diff)
-  export_motion_primitives(angles, motion_primitives, args.max_angle_idx_diff,
-                           args.output)
+  export_motion_primitives(angles, motion_primitives, args.output)
 
 
 if __name__ == '__main__':
