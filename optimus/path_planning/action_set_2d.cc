@@ -38,6 +38,24 @@ bool ActionSet2D::Validate() const {
     return false;
   }
 
+  if (primitive_group_start_indices.size() != angles.size()) {
+    return false;
+  }
+  if (!std::is_sorted(primitive_group_start_indices.begin(),
+                      primitive_group_start_indices.end())) {
+    return false;
+  }
+  if (primitive_group_start_indices.front() != 0) {
+    return false;
+  }
+  if (primitive_group_start_indices.back() >=
+      static_cast<int>(motion_primitives.size())) {
+    return false;
+  }
+
+  // TODO(mvukov) Cross-check angles, primitive_group_start_indices and
+  // motion_primitives.
+
   for (const auto& primitive : motion_primitives) {
     if (!primitive.Validate()) {
       return false;

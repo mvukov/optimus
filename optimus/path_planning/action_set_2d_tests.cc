@@ -26,8 +26,18 @@ using ::testing::Test;
 class TestActionSet2D : public ::testing::Test {
  public:
   void CreateValidActionSet() {
-    action_set_.angles = {-3.0 * M_PI / 4, -M_PI / 2, -M_PI / 4,    0,
-                          M_PI / 4,        M_PI / 2,  3 * M_PI / 4, M_PI};
+    auto& angles = action_set_.angles;
+    angles = {-3.0 * M_PI / 4, -M_PI / 2, -M_PI / 4,    0,
+              M_PI / 4,        M_PI / 2,  3 * M_PI / 4, M_PI};
+    const auto num_angles = angles.size();
+
+    auto& primitive_group_start_indices =
+        action_set_.primitive_group_start_indices;
+    primitive_group_start_indices.resize(num_angles);
+    std::generate(primitive_group_start_indices.begin(),
+                  primitive_group_start_indices.end(),
+                  [n = 0]() mutable { return n++; });
+    action_set_.motion_primitives.resize(num_angles);
   }
 
   ActionSet2D action_set_;
@@ -67,6 +77,47 @@ TEST_F(TestActionSet2D,
   CreateValidActionSet();
 
   action_set_.angles.back() = M_PI - 0.1;
+
+  EXPECT_FALSE(action_set_.Validate());
+}
+
+TEST_F(
+    TestActionSet2D,
+    GivenValidStartIndices_WhenNumStartIndicesNeqNumAngles_EnsureValidationFails) {  // NOLINT
+  CreateValidActionSet();
+
+  action_set_.primitive_group_start_indices.push_back(
+      action_set_.primitive_group_start_indices.back());
+
+  EXPECT_FALSE(action_set_.Validate());
+}
+
+TEST_F(TestActionSet2D,
+       GivenValidStartIndices_WhenStartIndicesNotSorter_EnsureValidationFails) {
+  CreateValidActionSet();
+
+  action_set_.primitive_group_start_indices.back() = 1;
+
+  EXPECT_FALSE(action_set_.Validate());
+}
+
+TEST_F(
+    TestActionSet2D,
+    GivenValidStartIndices_WhenFirstStartIndexNotZero_EnsureValidationFails) {
+  CreateValidActionSet();
+
+  action_set_.primitive_group_start_indices.front() = 1;
+
+  EXPECT_FALSE(action_set_.Validate());
+}
+
+TEST_F(
+    TestActionSet2D,
+    GivenValidStartIndices_WhenLastStartIndexGtNumMotionPrimitives_EnsureValidationFails) {  // NOLINT
+  CreateValidActionSet();
+
+  action_set_.primitive_group_start_indices.back() =
+      action_set_.motion_primitives.size();
 
   EXPECT_FALSE(action_set_.Validate());
 }
