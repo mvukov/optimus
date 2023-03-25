@@ -73,9 +73,6 @@ PlannerStatus AStarSE2Planner::ReconstructPath(
         env_.action_set().motion_primitives.at(primitive_index);
 
     const int primitive_length = primitive.x.size();
-    if (primitive_length < MotionPrimitive2D::kMinLength) {
-      return PlannerStatus::kInternalError;
-    }
     const auto num_samples =
         el == num_path_indices - 2 ? primitive_length : primitive_length - 1;
     path_size += num_samples;

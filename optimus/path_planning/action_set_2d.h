@@ -32,7 +32,7 @@ struct MotionPrimitive2D {
   std::vector<float> y;
   std::vector<float> theta;
 
-  [[nodiscard]] bool Validate() const { return true; }
+  [[nodiscard]] bool Validate() const;
 };
 
 struct ActionSet2D {

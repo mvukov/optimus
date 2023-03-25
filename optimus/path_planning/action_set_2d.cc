@@ -24,6 +24,34 @@ namespace {
 constexpr float kTwoPi = 2.0 * M_PI;
 }  // namespace
 
+bool MotionPrimitive2D::Validate() const {
+  if (swath_x.empty()) {
+    return false;
+  }
+  if (swath_x.size() != swath_y.size()) {
+    return false;
+  }
+  if (length <= 0) {
+    return false;
+  }
+  if (abs_angle_diff < 0) {
+    return false;
+  }
+  if (end_x_idx == 0 && end_y_idx == 0) {
+    return false;
+  }
+  if (static_cast<int>(x.size()) < kMinLength) {
+    return false;
+  }
+  if (x.size() != y.size()) {
+    return false;
+  }
+  if (x.size() != theta.size()) {
+    return false;
+  }
+  return true;
+}
+
 bool ActionSet2D::Validate() const {
   if (angles.empty()) {
     return false;

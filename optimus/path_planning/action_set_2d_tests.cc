@@ -23,6 +23,32 @@ namespace optimus {
 using ::testing::Eq;
 using ::testing::Test;
 
+MotionPrimitive2D CreateValidPrimitive() {
+  MotionPrimitive2D primitive;
+  primitive.swath_x = {1, 2};
+  primitive.swath_y = {3, 4};
+  primitive.length = 1.2;
+  primitive.abs_angle_diff = 0.6;
+  primitive.end_x_idx = 1;
+  primitive.end_y_idx = 2;
+  primitive.end_angle_idx = 3;
+  primitive.x = {0.1, 0.2};
+  primitive.y = {0.34, 0.56};
+  primitive.theta = {0.78, 0.9};
+  return primitive;
+}
+
+class TestMotionPrimitive2D : public ::testing::Test {};
+
+TEST_F(TestMotionPrimitive2D,
+       GivenValidPrimitives_WhenValidateCalled_EnsureValidationPass) {
+  const auto primitive = CreateValidPrimitive();
+
+  EXPECT_TRUE(primitive.Validate());
+}
+
+// TODO(mvukov) Add failure tests.
+
 class TestActionSet2D : public ::testing::Test {
  public:
   void CreateValidActionSet() {
@@ -37,7 +63,8 @@ class TestActionSet2D : public ::testing::Test {
     std::generate(primitive_group_start_indices.begin(),
                   primitive_group_start_indices.end(),
                   [n = 0]() mutable { return n++; });
-    action_set_.motion_primitives.resize(num_angles);
+    const auto valid_primitive = CreateValidPrimitive();
+    action_set_.motion_primitives.resize(num_angles, valid_primitive);
   }
 
   ActionSet2D action_set_;
