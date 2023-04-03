@@ -56,4 +56,10 @@ TEST(TestGetBitMask, WhenNumBits8_EnsureMaskIs255) {
   EXPECT_THAT(GetBitMask(8), Eq(255));
 }
 
+TEST(TestIsInf, WhenInfCost_EnsureIsInfPasses) { EXPECT_TRUE(IsInf(kInfCost)); }
+
+TEST(TestIsInf, WhenFiniteValue_EnsureIsInfFails) {
+  EXPECT_FALSE(IsInf(std::numeric_limits<float>::max()));
+}
+
 }  // namespace optimus

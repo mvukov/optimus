@@ -41,18 +41,23 @@ class PlannerAlgorithm {
                                        const UserCallback& user_callback,
                                        std::vector<int>& path);
 
+  [[nodiscard]] PlannerStatus ReplanPath(int start,
+                                         const std::vector<int>& changed_states,
+                                         const UserCallback& user_callback,
+                                         std::vector<int>& path);
+
  protected:
   Environment* env_;
 
  private:
-  [[nodiscard]] PlannerStatus Validate(int start, int goal) const;
+  [[nodiscard]] PlannerStatus Validate(int start, int* goal) const;
 };
 
 template <class D, class E>
 PlannerStatus PlannerAlgorithm<D, E>::PlanPath(
     int start, int goal, const UserCallback& user_callback,
     std::vector<int>& path) {
-  if (auto status = Validate(start, goal); status != PlannerStatus::kSuccess) {
+  if (auto status = Validate(start, &goal); status != PlannerStatus::kSuccess) {
     return status;
   }
   if (!env_->Initialize()) {
@@ -66,7 +71,19 @@ PlannerStatus PlannerAlgorithm<D, E>::PlanPath(
 }
 
 template <class D, class E>
-PlannerStatus PlannerAlgorithm<D, E>::Validate(int start, int goal) const {
+PlannerStatus PlannerAlgorithm<D, E>::ReplanPath(
+    int start, const std::vector<int>& changed_states,
+    const UserCallback& user_callback, std::vector<int>& path) {
+  if (auto status = Validate(start, nullptr);
+      status != PlannerStatus::kSuccess) {
+    return status;
+  }
+  return static_cast<D*>(this)->ReplanPathImpl(start, changed_states,
+                                               user_callback, path);
+}
+
+template <class D, class E>
+PlannerStatus PlannerAlgorithm<D, E>::Validate(int start, int* goal) const {
   // TODO(mvukov) Introduce more advanced status codes!
   if (env_ == nullptr || !env_->Validate()) {
     return PlannerStatus::kInternalError;
@@ -74,7 +91,8 @@ PlannerStatus PlannerAlgorithm<D, E>::Validate(int start, int goal) const {
   if (!env_->IsStateIndexValid(start) || !env_->IsStateValid(start)) {
     return PlannerStatus::kInternalError;
   }
-  if (!env_->IsStateIndexValid(goal) || !env_->IsStateValid(goal)) {
+  if (goal != nullptr &&
+      (!env_->IsStateIndexValid(*goal) || !env_->IsStateValid(*goal))) {
     return PlannerStatus::kInternalError;
   }
   return PlannerStatus::kSuccess;

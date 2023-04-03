@@ -34,6 +34,10 @@ class PlannerEnvironmentMock {
   MOCK_METHOD(void, GetNeighborsAndCosts,
               (int, std::vector<int>&, std::vector<float>&));
 
+  // Required for DStarLite:
+  MOCK_METHOD(int, GetMaxNumPredecessors, (), (const));
+  MOCK_METHOD(void, GetPredecessors, (int, std::vector<int>&), (const));
+
   void SetUpValidEnv() {
     using ::testing::Return;
     ON_CALL(*this, Validate).WillByDefault(Return(true));

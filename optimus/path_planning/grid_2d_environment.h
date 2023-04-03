@@ -95,6 +95,13 @@ class Grid2DEnvironment {
     }
   }
 
+  [[nodiscard]] int GetMaxNumPredecessors() const { return max_num_neighbors_; }
+
+  void GetPredecessors(int pivot, std::vector<int>& predecessors) const {
+    Get8NeighborsOn2dGrid(pivot, obstacle_data_->cols(), obstacle_data_->rows(),
+                          predecessors);
+  }
+
   const auto& obstacle_data() const { return *obstacle_data_; }
 
  private:

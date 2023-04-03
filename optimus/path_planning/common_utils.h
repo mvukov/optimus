@@ -14,6 +14,7 @@
 #ifndef OPTIMUS_PATH_PLANNING_COMMON_UTILS_H_
 #define OPTIMUS_PATH_PLANNING_COMMON_UTILS_H_
 
+#include <cmath>
 #include <cstdint>
 #include <limits>
 
@@ -36,6 +37,8 @@ static inline bool IsGreater(
     float a, float b, float tolerance = std::numeric_limits<float>::epsilon()) {
   return a > b + tolerance;
 }
+
+static inline bool IsInf(float a) { return std::isinf(a); }
 
 static inline int GetNumBits(int v) {
   if (v < 0) {
