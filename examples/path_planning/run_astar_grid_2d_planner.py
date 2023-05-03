@@ -45,7 +45,7 @@ def main():
   env_config = py_path_planning.Grid2DEnvironment.Config()
   env_config.valid_state_threshold = 15
 
-  planner = py_path_planning.AStarGrid2DPlanner(env_config)
+  planner = py_path_planning.DStarLiteGrid2DPlanner(env_config)
   start = [127, 28]
   goal = [146, 436]
 

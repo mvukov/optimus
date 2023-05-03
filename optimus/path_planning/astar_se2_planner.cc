@@ -24,9 +24,9 @@ constexpr int kMinPathLength = 2;
 
 }  // namespace
 
-PlannerStatus AStarSE2Planner::PlanPath(
-    const Pose2D& start, const Pose2D& goal,
-    const Algorithm::UserCallback& user_callback, std::vector<Pose2D>& path) {
+PlannerStatus AStarSE2Planner::PlanPath(const Pose2D& start, const Pose2D& goal,
+                                        const UserCallback& user_callback,
+                                        std::vector<Pose2D>& path) {
   if (!env_.Validate()) {
     return PlannerStatus::kInternalError;
   }

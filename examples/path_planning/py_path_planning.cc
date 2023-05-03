@@ -20,6 +20,7 @@
 #include "optimus/path_planning/action_set_2d.h"
 #include "optimus/path_planning/astar_grid_2d_planner.h"
 #include "optimus/path_planning/astar_se2_planner.h"
+#include "optimus/path_planning/dstar_lite_grid_2d_planner.h"
 #include "optimus/path_planning/se2_environment.h"
 
 namespace py = pybind11;
@@ -79,11 +80,12 @@ class ExampleAStarSE2Planner {
   int num_expansions_ = 0;
 };
 
-class PyAStarGrid2DPlanner {
+template <class Planner>
+class PyGrid2DPlanner {
  public:
-  using Position = AStarGrid2DPlanner::Position;
+  using Position = typename Planner::Position;
 
-  explicit PyAStarGrid2DPlanner(const Grid2DEnvironment::Config& config)
+  explicit PyGrid2DPlanner(const Grid2DEnvironment::Config& config)
       : planner_(config) {}
 
   std::vector<Position> PyPlanPath(
@@ -117,10 +119,13 @@ class PyAStarGrid2DPlanner {
   auto num_expansions() const { return num_expansions_; }
 
  private:
-  AStarGrid2DPlanner planner_;
+  Planner planner_;
   double planning_time_ = 0;
   int num_expansions_ = 0;
 };
+
+using PyAStarGrid2DPlanner = PyGrid2DPlanner<AStarGrid2DPlanner>;
+using PyDStarLiteGrid2DPlanner = PyGrid2DPlanner<DStarLiteGrid2DPlanner>;
 
 PYBIND11_MODULE(py_path_planning, m) {
   py::class_<MotionPrimitive2D>(m, "MotionPrimitive2D")
@@ -186,6 +191,14 @@ PYBIND11_MODULE(py_path_planning, m) {
                                  &PyAStarGrid2DPlanner::planning_time)
           .def_property_readonly("num_expansions",
                                  &PyAStarGrid2DPlanner::num_expansions);
+
+  py::class_<PyDStarLiteGrid2DPlanner>(m, "DStarLiteGrid2DPlanner")
+      .def(py::init<const Grid2DEnvironment::Config&>(), py::arg("config"))
+      .def("plan_path", &PyDStarLiteGrid2DPlanner::PyPlanPath)
+      .def_property_readonly("planning_time",
+                             &PyDStarLiteGrid2DPlanner::planning_time)
+      .def_property_readonly("num_expansions",
+                             &PyDStarLiteGrid2DPlanner::num_expansions);
 }
 
 }  // namespace optimus

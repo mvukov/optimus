@@ -40,9 +40,9 @@ class AStarSE2Planner {
     return env_.SetObstacleData(obstacle_data);
   }
 
-  [[nodiscard]] PlannerStatus PlanPath(
-      const Pose2D& start, const Pose2D& goal,
-      const Algorithm::UserCallback& user_callback, std::vector<Pose2D>& path);
+  [[nodiscard]] PlannerStatus PlanPath(const Pose2D& start, const Pose2D& goal,
+                                       const UserCallback& user_callback,
+                                       std::vector<Pose2D>& path);
 
   const auto& env() const { return env_; }
 

@@ -31,24 +31,23 @@ class DStarLitePlanner
   using Base::Base;
 
   PlannerStatus PlanPathImpl(int start, int goal,
-                             const typename Base::UserCallback& user_callback,
+                             const UserCallback& user_callback,
                              std::vector<int>& path);
 
   PlannerStatus ReplanPathImpl(int start,
                                const std::vector<int>& changed_states,
-                               const typename Base::UserCallback& user_callback,
+                               const UserCallback& user_callback,
                                std::vector<int>& path);
 
  private:
   void Reset();
 
-  PlannerStatus CalculateShortestPath(
-      const typename Base::UserCallback& user_callback);
+  PlannerStatus CalculateShortestPath(const UserCallback& user_callback);
   Key CalculateKey(int index) const;
   void UpdateVertex(int pivot);
   void UpdatePredecessors(int pivot);
-  PlannerStatus ReconstructShortestPath(
-      const typename Base::UserCallback& user_callback, std::vector<int>& path);
+  PlannerStatus ReconstructShortestPath(const UserCallback& user_callback,
+                                        std::vector<int>& path);
 
   PriorityQueue open_queue_;
   std::vector<bool> open_states_;
@@ -67,7 +66,7 @@ class DStarLitePlanner
 
 template <class E>
 PlannerStatus DStarLitePlanner<E>::PlanPathImpl(
-    int start, int goal, const typename Base::UserCallback& user_callback,
+    int start, int goal, const UserCallback& user_callback,
     std::vector<int>& path) {
   Reset();
 
@@ -126,7 +125,7 @@ Key DStarLitePlanner<E>::CalculateKey(int index) const {
 
 template <class E>
 PlannerStatus DStarLitePlanner<E>::CalculateShortestPath(
-    const typename Base::UserCallback& user_callback) {
+    const UserCallback& user_callback) {
   // Each vertex can be expanded at most twice.
   const auto max_num_iterations = 2 * this->env_->GetStateSpaceSize();
   auto num_iterations = 0;
@@ -134,10 +133,6 @@ PlannerStatus DStarLitePlanner<E>::CalculateShortestPath(
   while (!open_queue_.empty() &&
          (open_queue_.top().key < start_key ||
           !AreEqual(rhs_values_[start_], g_values_[start_]))) {
-    if (user_callback && !user_callback()) {
-      return PlannerStatus::kUserAbort;
-    }
-
     const auto pivot = open_queue_.top();
     open_queue_.pop();
 
@@ -146,6 +141,10 @@ PlannerStatus DStarLitePlanner<E>::CalculateShortestPath(
       continue;
     }
     open_states_[pivot_index] = false;
+
+    if (user_callback && !user_callback()) {
+      return PlannerStatus::kUserAbort;
+    }
 
     const auto new_pivot_key = CalculateKey(pivot_index);
     if (pivot.key < new_pivot_key) {
@@ -221,7 +220,7 @@ void DStarLitePlanner<E>::UpdatePredecessors(int pivot) {
 
 template <class E>
 PlannerStatus DStarLitePlanner<E>::ReconstructShortestPath(
-    const typename Base::UserCallback& user_callback, std::vector<int>& path) {
+    const UserCallback& user_callback, std::vector<int>& path) {
   path.clear();
   path.push_back(start_);
   auto pivot = start_;
@@ -242,7 +241,7 @@ PlannerStatus DStarLitePlanner<E>::ReconstructShortestPath(
 template <class E>
 PlannerStatus DStarLitePlanner<E>::ReplanPathImpl(
     int start, const std::vector<int>& changed_states,
-    const typename Base::UserCallback& user_callback, std::vector<int>& path) {
+    const UserCallback& user_callback, std::vector<int>& path) {
   if (goal_ == kInvalidIndex) {
     return PlannerStatus::kInternalError;
   }

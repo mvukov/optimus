@@ -1,4 +1,4 @@
-// Copyright 2022 Milan Vukov. All rights reserved.
+// Copyright 2023 Milan Vukov. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,26 +11,18 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include "optimus/path_planning/planner_algorithm.h"
+#ifndef OPTIMUS_PATH_PLANNING_DSTAR_LITE_GRID_2D_PLANNER_H_
+#define OPTIMUS_PATH_PLANNING_DSTAR_LITE_GRID_2D_PLANNER_H_
+
+#include "optimus/path_planning/dstar_lite_planner.h"
+#include "optimus/path_planning/grid_2d_environment.h"
+#include "optimus/path_planning/grid_2d_planner.h"
 
 namespace optimus {
 
-std::string ToString(PlannerStatus status) {
-  switch (status) {
-    case PlannerStatus::kUnknown:
-      return "unknown";
-    case PlannerStatus::kSuccess:
-      return "success";
-    case PlannerStatus::kInfeasibleProblem:
-      return "infeasible problem";
-    case PlannerStatus::kInternalError:
-      return "internal error";
-    case PlannerStatus::kUserAbort:
-      return "user abort";
-    case PlannerStatus::kNotImplemented:
-      return "not implemented";
-  }
-  return "impossible";
-}
+using DStarLiteGrid2DPlanner =
+    Grid2DPlanner<DStarLitePlanner<Grid2DEnvironment>>;
 
 }  // namespace optimus
+
+#endif  // OPTIMUS_PATH_PLANNING_DSTAR_LITE_GRID_2D_PLANNER_H_

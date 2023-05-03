@@ -34,8 +34,7 @@ class PlannerAlgorithmMock
   using Base::Base;
 
   MOCK_METHOD(PlannerStatus, PlanPathImpl,
-              (int start, int goal,
-               const PlannerAlgorithm::UserCallback& user_callback,
+              (int start, int goal, const UserCallback& user_callback,
                std::vector<int>& path));
 };
 

@@ -30,17 +30,15 @@ class AStarPlanner
   using Base::Base;
 
   PlannerStatus PlanPathImpl(int start, int goal,
-                             const typename Base::UserCallback& user_callback,
+                             const UserCallback& user_callback,
                              std::vector<int>& path);
 
  private:
   void Reset();
-  PlannerStatus Expand(int goal,
-                       const typename Base::UserCallback& user_callback);
+  PlannerStatus Expand(int goal, const UserCallback& user_callback);
   void UpdateIndex(int goal, int pivot, int neighbor,
                    float pivot_to_neighbor_cost);
-  bool ReconstructShortestPath(int goal,
-                               const typename Base::UserCallback& user_callback,
+  bool ReconstructShortestPath(int goal, const UserCallback& user_callback,
                                std::vector<int>& path);
 
   PriorityQueue open_queue_;
@@ -53,9 +51,9 @@ class AStarPlanner
 };
 
 template <class E>
-PlannerStatus AStarPlanner<E>::PlanPathImpl(
-    int start, int goal, const typename Base::UserCallback& user_callback,
-    std::vector<int>& path) {
+PlannerStatus AStarPlanner<E>::PlanPathImpl(int start, int goal,
+                                            const UserCallback& user_callback,
+                                            std::vector<int>& path) {
   Reset();
 
   open_queue_.emplace(start, Key{this->env_->GetHeuristicCost(start, goal), 0});
@@ -94,8 +92,8 @@ void AStarPlanner<E>::Reset() {
 }
 
 template <class E>
-PlannerStatus AStarPlanner<E>::Expand(
-    int goal, const typename Base::UserCallback& user_callback) {
+PlannerStatus AStarPlanner<E>::Expand(int goal,
+                                      const UserCallback& user_callback) {
   while (!open_queue_.empty()) {
     if (user_callback && !user_callback()) {
       return PlannerStatus::kUserAbort;
@@ -141,9 +139,9 @@ void AStarPlanner<E>::UpdateIndex(int goal, int pivot, int neighbor,
 }
 
 template <class E>
-bool AStarPlanner<E>::ReconstructShortestPath(
-    int goal, const typename Base::UserCallback& user_callback,
-    std::vector<int>& path) {
+bool AStarPlanner<E>::ReconstructShortestPath(int goal,
+                                              const UserCallback& user_callback,
+                                              std::vector<int>& path) {
   if (!visited_indices_.at(goal)) {
     return false;
   }

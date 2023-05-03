@@ -26,15 +26,16 @@ enum class PlannerStatus {
   kInfeasibleProblem,
   kInternalError,
   kUserAbort,
+  kNotImplemented,
 };
+
+using UserCallback = std::function<bool(void)>;
 
 std::string ToString(PlannerStatus status);
 
 template <class Derived, class Environment>
 class PlannerAlgorithm {
  public:
-  using UserCallback = std::function<bool(void)>;
-
   explicit PlannerAlgorithm(Environment* env) : env_(env) {}
 
   [[nodiscard]] PlannerStatus PlanPath(int start, int goal,
