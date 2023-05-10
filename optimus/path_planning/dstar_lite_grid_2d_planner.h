@@ -23,6 +23,14 @@ namespace optimus {
 using DStarLiteGrid2DPlanner =
     Grid2DPlanner<DStarLitePlanner<Grid2DEnvironment>>;
 
+template <>
+std::optional<float> DStarLiteGrid2DPlanner::GetPathCost() const {
+  if (!start_index_) {
+    return std::nullopt;
+  }
+  return algorithm_.g_values().at(*start_index_);
+}
+
 }  // namespace optimus
 
 #endif  // OPTIMUS_PATH_PLANNING_DSTAR_LITE_GRID_2D_PLANNER_H_

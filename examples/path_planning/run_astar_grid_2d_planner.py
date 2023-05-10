@@ -53,6 +53,7 @@ def main():
     path = planner.plan_path(obstacle_data.astype(numpy.uint8), start, goal)
     print(f'Planning time: {planner.planning_time:.3f} seconds.')
     print(f'Number of expansions: {planner.num_expansions}.')
+    print(f'Path cost: {planner.path_cost}.')
 
   except RuntimeError as ex:
     print(ex)

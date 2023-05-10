@@ -71,7 +71,7 @@ TEST_F(TestAStarPlanner, WhenFeasibleProblem_ThenPlanPathSucceeds) {
   EXPECT_CALL(env_, GetMaxNumNeighbors);
   EXPECT_CALL(env_, GetHeuristicCost(2, 2)).WillOnce(Return(0.2));
 
-  EXPECT_CALL(user_callback_, Call).Times(4);
+  EXPECT_CALL(user_callback_, Call).Times(3);
 
   EXPECT_THAT(planner_->PlanPath(0, 2, user_callback_.AsStdFunction(), path_),
               Eq(PlannerStatus::kSuccess));

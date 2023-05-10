@@ -22,6 +22,14 @@ namespace optimus {
 
 using AStarGrid2DPlanner = Grid2DPlanner<AStarPlanner<Grid2DEnvironment>>;
 
+template <>
+std::optional<float> AStarGrid2DPlanner::GetPathCost() const {
+  if (!goal_index_) {
+    return std::nullopt;
+  }
+  return algorithm_.g_values().at(*goal_index_);
+}
+
 }  // namespace optimus
 
 #endif  // OPTIMUS_PATH_PLANNING_ASTAR_GRID_2D_PLANNER_H_

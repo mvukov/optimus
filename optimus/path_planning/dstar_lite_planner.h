@@ -39,6 +39,8 @@ class DStarLitePlanner
                                const UserCallback& user_callback,
                                std::vector<int>& path);
 
+  const auto& g_values() const { return g_values_; }
+
  private:
   void Reset();
 

@@ -14,6 +14,7 @@
 #ifndef OPTIMUS_PATH_PLANNING_GRID_2D_PLANNER_H_
 #define OPTIMUS_PATH_PLANNING_GRID_2D_PLANNER_H_
 
+#include <optional>
 #include <vector>
 
 #include "optimus/path_planning/grid_2d_environment.h"
@@ -37,12 +38,16 @@ class Grid2DPlannerBase {
       const Position& start, const Position& goal,
       const UserCallback& user_callback, std::vector<Position>& path) = 0;
 
+  virtual std::optional<float> GetPathCost() const = 0;
+
  protected:
   int GetStateIndex(const Position& t) const;
   void ReconstructPath(const std::vector<int>& path_indices,
                        std::vector<Position>& path) const;
 
   Grid2DEnvironment env_;
+  std::optional<int> start_index_;
+  std::optional<int> goal_index_;
 };
 
 template <class Algorithm>
@@ -54,17 +59,20 @@ class Grid2DPlanner final : public Grid2DPlannerBase {
   [[nodiscard]] PlannerStatus PlanPath(const Position& start,
                                        const Position& goal,
                                        const UserCallback& user_callback,
-                                       std::vector<Position>& path) override;
+                                       std::vector<Position>& path) final;
+
+  std::optional<float> GetPathCost() const final;
 
  private:
   Algorithm algorithm_;
 };
 
-template <class A>
-PlannerStatus Grid2DPlanner<A>::PlanPath(const Position& start,
-                                         const Position& goal,
-                                         const UserCallback& user_callback,
-                                         std::vector<Position>& path) {
+template <class Algorithm>
+PlannerStatus Grid2DPlanner<Algorithm>::PlanPath(
+    const Position& start, const Position& goal,
+    const UserCallback& user_callback, std::vector<Position>& path) {
+  start_index_.reset();
+  goal_index_.reset();
   const auto start_index = GetStateIndex(start);
   const auto goal_index = GetStateIndex(goal);
   std::vector<int> path_indices;  // TODO(mvukov) Make this a member variable?
@@ -74,6 +82,8 @@ PlannerStatus Grid2DPlanner<A>::PlanPath(const Position& start,
     return status;
   }
   ReconstructPath(path_indices, path);
+  start_index_ = start_index;
+  goal_index_ = goal_index;
   return PlannerStatus::kSuccess;
 }
 

@@ -117,6 +117,7 @@ class PyGrid2DPlanner {
 
   auto planning_time() const { return planning_time_; }
   auto num_expansions() const { return num_expansions_; }
+  auto path_cost() const { return planner_.GetPathCost(); }
 
  private:
   Planner planner_;
@@ -183,14 +184,14 @@ PYBIND11_MODULE(py_path_planning, m) {
       .def_readwrite("valid_state_threshold",
                      &Grid2DEnvironment::Config::valid_state_threshold);
 
-  auto astar_grid_2d_planner =
-      py::class_<PyAStarGrid2DPlanner>(m, "AStarGrid2DPlanner")
-          .def(py::init<const Grid2DEnvironment::Config&>(), py::arg("config"))
-          .def("plan_path", &PyAStarGrid2DPlanner::PyPlanPath)
-          .def_property_readonly("planning_time",
-                                 &PyAStarGrid2DPlanner::planning_time)
-          .def_property_readonly("num_expansions",
-                                 &PyAStarGrid2DPlanner::num_expansions);
+  py::class_<PyAStarGrid2DPlanner>(m, "AStarGrid2DPlanner")
+      .def(py::init<const Grid2DEnvironment::Config&>(), py::arg("config"))
+      .def("plan_path", &PyAStarGrid2DPlanner::PyPlanPath)
+      .def_property_readonly("planning_time",
+                             &PyAStarGrid2DPlanner::planning_time)
+      .def_property_readonly("num_expansions",
+                             &PyAStarGrid2DPlanner::num_expansions)
+      .def_property_readonly("path_cost", &PyAStarGrid2DPlanner::path_cost);
 
   py::class_<PyDStarLiteGrid2DPlanner>(m, "DStarLiteGrid2DPlanner")
       .def(py::init<const Grid2DEnvironment::Config&>(), py::arg("config"))
@@ -198,7 +199,8 @@ PYBIND11_MODULE(py_path_planning, m) {
       .def_property_readonly("planning_time",
                              &PyDStarLiteGrid2DPlanner::planning_time)
       .def_property_readonly("num_expansions",
-                             &PyDStarLiteGrid2DPlanner::num_expansions);
+                             &PyDStarLiteGrid2DPlanner::num_expansions)
+      .def_property_readonly("path_cost", &PyDStarLiteGrid2DPlanner::path_cost);
 }
 
 }  // namespace optimus

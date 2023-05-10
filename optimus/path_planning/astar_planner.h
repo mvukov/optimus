@@ -33,6 +33,8 @@ class AStarPlanner
                              const UserCallback& user_callback,
                              std::vector<int>& path);
 
+  const auto& g_values() const { return g_values_; }
+
  private:
   void Reset();
   PlannerStatus Expand(int goal, const UserCallback& user_callback);
@@ -95,16 +97,16 @@ template <class E>
 PlannerStatus AStarPlanner<E>::Expand(int goal,
                                       const UserCallback& user_callback) {
   while (!open_queue_.empty()) {
-    if (user_callback && !user_callback()) {
-      return PlannerStatus::kUserAbort;
-    }
-
     auto pivot = open_queue_.top();
     open_queue_.pop();
     const auto pivot_index = pivot.index;
 
     if (pivot_index == goal) {
       return PlannerStatus::kSuccess;
+    }
+
+    if (user_callback && !user_callback()) {
+      return PlannerStatus::kUserAbort;
     }
 
     this->env_->GetNeighborsAndCosts(pivot_index, neighbors_,

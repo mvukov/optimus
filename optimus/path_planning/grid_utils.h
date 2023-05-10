@@ -32,6 +32,8 @@ static inline float GetHypot(int start, int goal, int grid_width) {
 void Get8NeighborsOn2dGrid(int pivot, int grid_width, int grid_height,
                            std::vector<int>& neighbors);
 
+void Set8PivotToNeighborCosts(std::vector<float>& costs);
+
 }  // namespace optimus
 
 #endif  // OPTIMUS_PATH_PLANNING_GRID_UTILS_H_

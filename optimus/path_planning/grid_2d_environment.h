@@ -80,18 +80,13 @@ class Grid2DEnvironment {
                             std::vector<float>& pivot_to_neighbor_costs) {
     Get8NeighborsOn2dGrid(pivot, obstacle_data_->cols(), obstacle_data_->rows(),
                           neighbors);
-    std::fill(pivot_to_neighbor_costs.begin(), pivot_to_neighbor_costs.end(),
-              kInfCost);
-    if (neighbors.size() != pivot_to_neighbor_costs.size()) {
-      return;
-    }
+    Set8PivotToNeighborCosts(pivot_to_neighbor_costs);
+
     for (size_t el = 0; el < neighbors.size(); ++el) {
       const auto neighbor = neighbors[el];
       if (neighbor == kInvalidIndex || !IsStateValid(neighbor)) {
-        continue;
+        pivot_to_neighbor_costs[el] = kInfCost;
       }
-      pivot_to_neighbor_costs[el] =
-          GetHypot(pivot, neighbor, obstacle_data_->cols());
     }
   }
 

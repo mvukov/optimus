@@ -20,20 +20,25 @@
 #include "optimus/path_planning/common_utils.h"
 
 namespace optimus {
+namespace {
+
+constexpr std::size_t kMaxNumNeighbors8 = 8;
+
+}
 
 void Get8NeighborsOn2dGrid(int pivot, int grid_width, int grid_height,
                            std::vector<int>& neighbors) {
-  constexpr int kMaxNumNeighbors = 8;
-  static const std::array<std::pair<int, int>, kMaxNumNeighbors> kNeighbors = {
+  static const std::array<std::pair<int, int>, kMaxNumNeighbors8> kNeighbors = {
       {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}},
   };
   const int x = pivot % grid_width;
   const int y = pivot / grid_width;
 
   std::fill(neighbors.begin(), neighbors.end(), kInvalidIndex);
-  const int max_num_neighbors =
-      std::min(static_cast<int>(neighbors.size()), kMaxNumNeighbors);
-  for (int el = 0; el < max_num_neighbors; ++el) {
+  if (neighbors.size() != kMaxNumNeighbors8) {
+    return;
+  }
+  for (std::size_t el = 0; el < kMaxNumNeighbors8; ++el) {
     const auto& local_neighbor = kNeighbors[el];
     const auto neighbor_x = x + local_neighbor.first;
     const auto neighbor_y = y + local_neighbor.second;
@@ -43,6 +48,16 @@ void Get8NeighborsOn2dGrid(int pivot, int grid_width, int grid_height,
     }
     neighbors[el] = neighbor_y * grid_width + neighbor_x;
   }
+}
+
+void Set8PivotToNeighborCosts(std::vector<float>& costs) {
+  static const std::array<float, kMaxNumNeighbors8> kPivotToNeighborCosts = {
+      M_SQRT2, 1., M_SQRT2, 1., 1., M_SQRT2, 1., M_SQRT2};
+  if (costs.size() != kMaxNumNeighbors8) {
+    std::fill(costs.begin(), costs.end(), kInfCost);
+  }
+  std::copy(kPivotToNeighborCosts.begin(), kPivotToNeighborCosts.end(),
+            costs.begin());
 }
 
 }  // namespace optimus
