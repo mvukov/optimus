@@ -159,8 +159,8 @@ PlannerStatus DStarLitePlanner<E>::CalculateShortestPath(
     } else if (IsLess(g_values_[pivot_index], rhs_values_[pivot_index])) {
       // Locally underconsistent case, the new path is worse than the old one.
       g_values_[pivot_index] = kInfCost;
-      UpdatePredecessors(pivot_index);
       UpdateVertex(pivot_index);
+      UpdatePredecessors(pivot_index);
     }
 
     if (pivot_index == start_ &&
@@ -184,25 +184,26 @@ void DStarLitePlanner<E>::UpdateVertex(int pivot) {
   if (pivot == kInvalidIndex) {
     return;
   }
-  if (pivot != goal_) {
-    // TODO(mvukov) we need GetSuccessorsAndCosts here.
-    this->env_->GetNeighborsAndCosts(pivot, neighbors_,
-                                     pivot_to_neighbor_costs_);
-    auto rhs = kInfCost;
-    const auto max_num_neighbors = this->env_->GetMaxNumNeighbors();
-    for (int el = 0; el < max_num_neighbors; ++el) {
-      const auto successor = neighbors_[el];
-      if (successor == kInvalidIndex) {
-        continue;
-      }
-      auto successor_rhs = g_values_[successor] + pivot_to_neighbor_costs_[el];
-      if (rhs > successor_rhs) {
-        rhs = successor_rhs;
-        best_next_states_[pivot] = successor;
-      }
-    }
-    rhs_values_[pivot] = rhs;
+  if (pivot == goal_) {
+    return;
   }
+
+  // TODO(mvukov) we need GetSuccessorsAndCosts here.
+  this->env_->GetNeighborsAndCosts(pivot, neighbors_, pivot_to_neighbor_costs_);
+  auto rhs = kInfCost;
+  const auto max_num_neighbors = this->env_->GetMaxNumNeighbors();
+  for (int el = 0; el < max_num_neighbors; ++el) {
+    const auto successor = neighbors_[el];
+    if (successor == kInvalidIndex) {
+      continue;
+    }
+    auto successor_rhs = g_values_[successor] + pivot_to_neighbor_costs_[el];
+    if (rhs > successor_rhs) {
+      rhs = successor_rhs;
+      best_next_states_[pivot] = successor;
+    }
+  }
+  rhs_values_[pivot] = rhs;
 
   if (!AreEqual(g_values_[pivot], rhs_values_[pivot])) {
     open_queue_.emplace(pivot, CalculateKey(pivot));
