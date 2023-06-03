@@ -65,8 +65,8 @@ py_binary(
 )
 
 py_binary(
-    name = "run_astar_grid_2d_planner",
-    srcs = ["run_astar_grid_2d_planner.py"],
+    name = "run_grid_2d_planners",
+    srcs = ["run_grid_2d_planners.py"],
     data = [
         "@test_data_csail//file",
     ],
