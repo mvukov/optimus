@@ -55,6 +55,7 @@ void Set8PivotToNeighborCosts(std::vector<float>& costs) {
       M_SQRT2, 1., M_SQRT2, 1., 1., M_SQRT2, 1., M_SQRT2};
   if (costs.size() != kMaxNumNeighbors8) {
     std::fill(costs.begin(), costs.end(), kInfCost);
+    return;
   }
   std::copy(kPivotToNeighborCosts.begin(), kPivotToNeighborCosts.end(),
             costs.begin());

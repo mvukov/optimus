@@ -39,28 +39,39 @@ def plot_results(path: numpy.ndarray, ax: matplotlib.axes.Axes,
   ax.set_ylabel('y')
 
 
+def run_planner(planner, obstacle_data, start, goal):
+  path = []
+  try:
+    path = planner.plan_path(obstacle_data.astype(numpy.uint8), start, goal)
+    print(f'Planning time: {planner.planning_time:.3f} seconds')
+    print(f'Number of expansions: {planner.num_expansions}')
+    print(f'Path cost: {planner.path_cost:.3f}')
+
+  except RuntimeError as ex:
+    print(ex)
+  return path
+
+
 def main():
   obstacle_data = utils.load_obstacle_data()
+
+  start = [127, 28]
+  goal = [146, 436]
 
   env_config = py_path_planning.Grid2DEnvironment.Config()
   env_config.valid_state_threshold = 15
 
-  planner = py_path_planning.DStarLiteGrid2DPlanner(env_config)
-  start = [127, 28]
-  goal = [146, 436]
+  astar_planner = py_path_planning.AStarGrid2DPlanner(env_config)
+  print('Running A*')
+  astar_path = run_planner(astar_planner, obstacle_data, start, goal)
 
-  try:
-    path = planner.plan_path(obstacle_data.astype(numpy.uint8), start, goal)
-    print(f'Planning time: {planner.planning_time:.3f} seconds.')
-    print(f'Number of expansions: {planner.num_expansions}.')
-    print(f'Path cost: {planner.path_cost}.')
+  dstar_lite_planner = py_path_planning.DStarLiteGrid2DPlanner(env_config)
+  print('Running D*Lite')
+  dstar_lite_path = run_planner(dstar_lite_planner, obstacle_data, start, goal)
 
-  except RuntimeError as ex:
-    print(ex)
-    path = []
-
-  fig, ax = pyplot.subplots(1, 1)
-  plot_results(path, ax, obstacle_data, color_map='Greys')
+  _, (ax1, ax2) = pyplot.subplots(1, 2, sharex=True, sharey=True)
+  plot_results(astar_path, ax1, obstacle_data, color_map='Greys')
+  plot_results(dstar_lite_path, ax2, obstacle_data, color_map='Greys')
   pyplot.show()
 
 
