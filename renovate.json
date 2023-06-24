@@ -7,7 +7,7 @@
   "enabledManagers": [
     "bazel",
     "bazelisk",
-    "github-actions",
+    "github-actions"
   ],
   "packageRules": [
     {
