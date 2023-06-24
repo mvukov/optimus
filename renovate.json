@@ -3,5 +3,22 @@
   "extends": [
     "config:base"
   ],
-  "dependencyDashboard": true
+  "dependencyDashboard": true,
+  "packageRules": [
+    {
+      "packagePatterns": [
+        "*"
+      ],
+      "enabled": false
+    },
+    {
+      "paths": [
+        ".github/workflows/main.yml",
+        "repositories/repositories.bzl",
+        ".bazelversion",
+        ".pre-commit-config.yaml"
+      ],
+      "enabled": true
+    }
+  ]
 }
