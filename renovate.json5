@@ -1,29 +1,30 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:base",
   ],
   "dependencyDashboard": true,
   "enabledManagers": [
     "bazel",
     "bazelisk",
-    "github-actions"
+    "github-actions",
+    "pre-commit",
   ],
   "packageRules": [
     {
       "packagePatterns": [
-        "*"
+        "*",
       ],
-      "enabled": false
+      "enabled": false,
     },
     {
       "paths": [
         ".github/workflows/main.yml",
         "repositories/repositories.bzl",
         ".bazelversion",
-        ".pre-commit-config.yaml"
+        ".pre-commit-config.yaml",
       ],
-      "enabled": true
+      "enabled": true,
     }
-  ]
+  ],
 }
