@@ -27,4 +27,7 @@
       "enabled": true,
     }
   ],
+  "schedule": [
+    "every weekend",
+  ]
 }
