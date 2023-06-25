@@ -56,9 +56,9 @@ def optimus_repositories():
     maybe(
         http_archive,
         name = "com_github_google_benchmark",
-        sha256 = "3bff5f237c317ddfd8d5a9b96b3eede7c0802e799db520d38ce756a2a46a18a0",
-        strip_prefix = "benchmark-1.5.5",
-        urls = ["https://github.com/google/benchmark/archive/refs/tags/v1.5.5.tar.gz"],
+        sha256 = "ea2e94c24ddf6594d15c711c06ccd4486434d9cf3eca954e2af8a20c88f9f172",
+        strip_prefix = "benchmark-1.8.0",
+        urls = ["https://github.com/google/benchmark/archive/refs/tags/v1.8.0.tar.gz"],
     )
 
     maybe(
