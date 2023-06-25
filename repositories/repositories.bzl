@@ -65,7 +65,7 @@ def optimus_repositories():
         http_archive,
         name = "pybind11",
         build_file = "//repositories:pybind11.BUILD.bazel",
-        sha256 = "6bd528c4dbe2276635dc787b6b1f2e5316cf6b49ee3e150264e455a0d68d19c1",
-        strip_prefix = "pybind11-2.9.2",
-        url = "https://github.com/pybind/pybind11/archive/v2.9.2.tar.gz",
+        sha256 = "832e2f309c57da9c1e6d4542dedd34b24e4192ecb4d62f6f4866a737454c9970",
+        strip_prefix = "pybind11-2.10.4",
+        url = "https://github.com/pybind/pybind11/archive/v2.10.4.tar.gz",
     )
