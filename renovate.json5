@@ -2,9 +2,9 @@
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   extends: ["config:base"],
   dependencyDashboard: true,
-  "dockerfile": {
+  dockerfile: {
     enabled: false,
-  }
+  },
   pip_requirements: {
     enabled: false,
   },
@@ -18,7 +18,5 @@
       groupName: "pre-commit-deps",
     },
   ],
-  "schedule": [
-    "every weekend",
-  ]
+  schedule: ["every weekend"],
 }
