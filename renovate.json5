@@ -1,14 +1,19 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base",
-  ],
-  "dependencyDashboard": true,
-  "enabledManagers": [
-    "bazel",
-    "bazelisk",
-    "github-actions",
-    "pre-commit",
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: ["config:base"],
+  dependencyDashboard: true,
+  pip_requirements: {
+    enabled: false,
+  },
+  "pre-commit": {
+    enabled: true,
+  },
+  packageRules: [
+    {
+      matchManagers: ["pre-commit"],
+      matchPackagePatterns: ["*"],
+      groupName: "pre-commit-deps",
+    },
   ],
   "schedule": [
     "every weekend",
