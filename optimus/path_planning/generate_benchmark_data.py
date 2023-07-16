@@ -15,6 +15,7 @@ import argparse
 import os
 
 import PIL.Image
+import python.runfiles.runfiles
 
 
 def main():
@@ -23,7 +24,9 @@ def main():
   args = parser.parse_args()
   output_dir = args.output_dir
 
-  img = PIL.Image.open('external/test_data_csail/file/scsail_corrected.png')
+  runfiles = python.runfiles.runfiles.Create()
+  img = PIL.Image.open(
+      runfiles.Rlocation('test_data_csail/file/scsail_corrected.png'))
   img = img.convert(mode='L')
   img = PIL.ImageChops.invert(img)
   resize_factor = 2

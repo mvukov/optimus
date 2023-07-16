@@ -102,14 +102,15 @@ py_pytest_test(
 py_binary(
     name = "generate_benchmark_data",
     srcs = ["generate_benchmark_data.py"],
+    data = ["@test_data_csail//file"],
     deps = [
+        "@rules_python//python/runfiles",
         requirement("pillow"),
     ],
 )
 
 genrule(
     name = "benchmark_data",
-    srcs = ["@test_data_csail//file"],
     outs = ["scsail.png"],
     cmd = " ".join([
         "$(location :generate_benchmark_data)",
