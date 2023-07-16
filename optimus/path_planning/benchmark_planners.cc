@@ -27,10 +27,9 @@ namespace optimus {
 
 class Image {
  public:
-  Image(const std::string& file_name, int desired_channels)
-      : file_name_(file_name), desired_channels_(desired_channels) {
-    data_.reset(::stbi_load(file_name_.c_str(), &width_, &height_,
-                            &num_channels_, desired_channels_));
+  Image(const std::string& file_name, int desired_channels) {
+    data_.reset(::stbi_load(file_name.c_str(), &width_, &height_,
+                            &num_channels_, desired_channels));
   }
 
   const auto* data() const { return data_.get(); }
@@ -39,8 +38,6 @@ class Image {
   auto num_channels() const { return num_channels_; }
 
  private:
-  std::string file_name_;
-
   struct StbImageDeleter {
     void operator()(unsigned char* img) { ::stbi_image_free(img); }
   };
@@ -49,7 +46,6 @@ class Image {
   int width_ = 0;
   int height_ = 0;
   int num_channels_ = 0;  // The number of 8-bit components per pixel.
-  int desired_channels_ = 0;
 };
 
 class BenchmarkPlanner : public benchmark::Fixture {
@@ -57,10 +53,11 @@ class BenchmarkPlanner : public benchmark::Fixture {
   using Position = Grid2DPlannerBase::Position;
 
   void SetUp(const ::benchmark::State&) {
-    Image img("optimus/path_planning/scsail.png", 0);
-    OPTIMUS_CHECK(img.data() != nullptr);
+    img_ = std::make_unique<Image>("optimus/path_planning/scsail.png", 0);
+    OPTIMUS_CHECK(img_->data() != nullptr);
+    OPTIMUS_CHECK(img_->num_channels() == 1);
     obstacle_data_ = Eigen::Map<const Grid2DEnvironment::ObstacleData>(
-        img.data(), img.height(), img.width());
+        img_->data(), img_->height(), img_->width());
 
     env_config_.valid_state_threshold = 15;
 
@@ -68,6 +65,7 @@ class BenchmarkPlanner : public benchmark::Fixture {
     goal_ = {146, 436};
   }
 
+  std::unique_ptr<Image> img_;
   Grid2DEnvironment::ObstacleData obstacle_data_;
   Grid2DEnvironment::Config env_config_;
   Position start_;
