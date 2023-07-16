@@ -69,3 +69,12 @@ def optimus_repositories():
         strip_prefix = "pybind11-2.10.4",
         url = "https://github.com/pybind/pybind11/archive/v2.10.4.tar.gz",
     )
+
+    maybe(
+        http_archive,
+        name = "stb",
+        sha256 = "d00921d49b06af62aa6bfb97c1b136bec661dd11dd4eecbcb0da1f6da7cedb4c",
+        strip_prefix = "stb-5736b15f7ea0ffb08dd38af21067c314d6a3aae9",
+        urls = ["https://github.com/nothings/stb/archive/5736b15f7ea0ffb08dd38af21067c314d6a3aae9.tar.gz"],
+        build_file = "//repositories:stb.BUILD.bazel",
+    )
