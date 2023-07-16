@@ -2,7 +2,6 @@ load("@optimus_pip_deps//:requirements.bzl", "requirement")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 load("@rules_python//python:defs.bzl", "py_binary")
 load("//repositories:cc_defs.bzl", "COPTS")
-load("//repositories:generator.bzl", "generator")
 
 cc_library(
     name = "mhe",
@@ -29,10 +28,14 @@ py_binary(
     ],
 )
 
-generator(
+genrule(
     name = "mhe_qp_test_data",
-    extension = ".h",
-    generator = ":generate_mhe_qp_test_vectors",
+    outs = ["mhe_qp_test_data.h"],
+    cmd = " ".join([
+        "$(location :generate_mhe_qp_test_vectors)",
+        "--output=$@",
+    ]),
+    tools = [":generate_mhe_qp_test_vectors"],
 )
 
 cc_test(
