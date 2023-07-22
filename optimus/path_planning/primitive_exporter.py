@@ -89,6 +89,10 @@ static const ActionSet2D g_{action_set_name} = {{
   // Motion primitives:
   {{
 {primitives}
+  }},
+  // Angles -> predecessors
+  {{
+{angles_to_predecessors}
   }}
 }};
 
@@ -150,7 +154,8 @@ def export_motion_primitives(angles: numpy.ndarray,
   exported_primitives = []
   current_start_angle_idx = None
   visited_start_angle_indices = []
-  primitive_group_start_indices = [-1] * len(angles)
+  num_angles = len(angles)
+  primitive_group_start_indices = [-1] * num_angles
   for idx, p in enumerate(motion_primitives):
     exported_primitives.append(dump_motion_primitive(idx, p))
     start_angle_idx = p.start_angle_idx
@@ -159,6 +164,16 @@ def export_motion_primitives(angles: numpy.ndarray,
       primitive_group_start_indices[start_angle_idx] = idx
       visited_start_angle_indices.append(start_angle_idx)
       current_start_angle_idx = start_angle_idx
+
+  angles_to_predecessors = []
+  for angle_idx in range(num_angles):
+    predecessors = [
+        f'{{{-p.end_x_idx}, {-p.end_y_idx}, {p.start_angle_idx}}}'
+        for p in motion_primitives
+        if p.end_angle_idx == angle_idx
+    ]
+    predecessors_str = ', '.join(predecessors)
+    angles_to_predecessors.append(f'{{{angle_idx}, {{{predecessors_str}}}}}')
 
   header_guard = file_name.upper()
   header_guard = ''.join([c if c.isalnum() else '_' for c in header_guard])
@@ -170,6 +185,7 @@ def export_motion_primitives(angles: numpy.ndarray,
       angles=export(angles),
       primitive_group_start_indices=export(
           numpy.asarray(primitive_group_start_indices)),
+      angles_to_predecessors=',\n'.join(angles_to_predecessors),
       primitives=',\n'.join(exported_primitives))
   with open(file_name, 'w', encoding='utf-8') as stream:
     stream.write(output_content)

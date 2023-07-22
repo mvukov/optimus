@@ -98,6 +98,10 @@ class SE2Environment {
     return edges_to_motion_primitive_indices_.at(GetEdgeIndex(from, to));
   }
 
+  [[nodiscard]] int GetMaxNumPredecessors() const { return max_num_neighbors_; }
+
+  void GetPredecessors(int pivot, std::vector<int>& predecessors) const;
+
   const auto& obstacle_data() const { return *obstacle_data_; }
   const auto& action_set() const { return *action_set_; }
   const auto& config() const { return config_; }

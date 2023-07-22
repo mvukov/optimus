@@ -14,6 +14,7 @@
 #ifndef OPTIMUS_PATH_PLANNING_ACTION_SET_2D_H_
 #define OPTIMUS_PATH_PLANNING_ACTION_SET_2D_H_
 
+#include <map>
 #include <vector>
 
 namespace optimus {
@@ -43,6 +44,15 @@ struct ActionSet2D {
   std::vector<int> primitive_group_start_indices;
   // Primitives are grouped and sorted for start angle indices.
   std::vector<MotionPrimitive2D> motion_primitives;
+
+  struct State {
+    int x_idx;
+    int y_idx;
+    int angle_idx;
+  };
+  // Assumes the current x = 0 and y = 0.
+  // Maps angle indices to predecessor states.
+  std::map<int, std::vector<State>> angles_to_predecessors;
 
   [[nodiscard]] bool Validate() const;
   [[nodiscard]] int GetAngleIndex(float angle) const;

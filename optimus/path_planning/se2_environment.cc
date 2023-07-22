@@ -163,4 +163,28 @@ void SE2Environment::GetNeighborsAndCosts(
   }
 }
 
+void SE2Environment::GetPredecessors(int pivot,
+                                     std::vector<int>& predecessors) const {
+  const auto xy_coords = ToGridCoords(pivot);
+  const auto angle_index = pivot & angle_mask_;
+
+  const int grid_width = obstacle_data_->cols();
+  const int grid_height = obstacle_data_->rows();
+  std::fill(predecessors.begin(), predecessors.end(), kInvalidIndex);
+  int offset = 0;
+  for (const auto& predecessor_state :
+       action_set_->angles_to_predecessors.at(angle_index)) {
+    const auto candidate_x = xy_coords.x + predecessor_state.x_idx;
+    const auto candidate_y = xy_coords.y + predecessor_state.y_idx;
+    if (candidate_x < 0 || candidate_x >= grid_width || candidate_y < 0 ||
+        candidate_y >= grid_height) {
+      continue;
+    }
+    predecessors[offset] =
+        ((candidate_y * grid_width + candidate_x) << num_angle_bits_) +
+        predecessor_state.angle_idx;
+    ++offset;
+  }
+}
+
 }  // namespace optimus
