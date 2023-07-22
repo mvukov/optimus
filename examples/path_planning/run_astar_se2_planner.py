@@ -73,9 +73,10 @@ def main():
   valid_state_threshold = 15
 
   def threshold_distance_field(squared_value):
-    if squared_value > valid_state_threshold:
+    df_threshold = valid_state_threshold + 1
+    if squared_value > df_threshold:
       return 0
-    return valid_state_threshold - squared_value
+    return df_threshold - squared_value
 
   distance_field = numpy.vectorize(threshold_distance_field)(distance_field)
 

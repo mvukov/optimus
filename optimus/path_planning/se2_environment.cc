@@ -137,8 +137,7 @@ void SE2Environment::GetNeighborsAndCosts(
       }
       const auto candidate_cost = (*obstacle_data_)(candidate_y, candidate_x);
       // TODO(mvukov) Should call IsStateValid here!
-      // TODO(mvukov) Perhaps >= should be documented!
-      if (candidate_cost >= config_.valid_state_threshold) {
+      if (candidate_cost > config_.valid_state_threshold) {
         discard = true;
         break;
       }
