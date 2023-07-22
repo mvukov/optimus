@@ -119,6 +119,8 @@ genrule(
     tools = [":generate_benchmark_data"],
 )
 
+# Profiling:
+# bazel run //optimus/path_planning:benchmark_planners --config=profile --run_under="perf record --call-graph dwarf -o `pwd`/perf.data -F 10000" -- --benchmark_filter=BenchmarkPlanner/BenchmarkDStarLiteGrid2dPlanner/*
 cc_binary(
     name = "benchmark_planners",
     srcs = [
