@@ -21,7 +21,9 @@
 
 #include "optimus/check.h"
 #include "optimus/path_planning/astar_grid_2d_planner.h"
+#include "optimus/path_planning/astar_se2_planner.h"
 #include "optimus/path_planning/dstar_lite_grid_2d_planner.h"
+#include "optimus/path_planning/dstar_lite_se2_planner.h"
 
 namespace optimus {
 
@@ -50,29 +52,35 @@ class Image {
 
 class BenchmarkPlanner : public benchmark::Fixture {
  public:
-  using Position = Grid2DPlannerBase::Position;
-
-  void SetUp(const ::benchmark::State&) {
+  BenchmarkPlanner() {
     img_ = std::make_unique<Image>("optimus/path_planning/scsail.png", 0);
     OPTIMUS_CHECK(img_->data() != nullptr);
     OPTIMUS_CHECK(img_->num_channels() == 1);
+  }
+
+  std::unique_ptr<Image> img_;
+};
+
+class BenchmarkGrid2dPlanner : public BenchmarkPlanner {
+ public:
+  using Position = Grid2DPlannerBase::Position;
+
+  BenchmarkGrid2dPlanner() {
     obstacle_data_ = Eigen::Map<const Grid2DEnvironment::ObstacleData>(
         img_->data(), img_->height(), img_->width());
-
     env_config_.valid_state_threshold = 15;
 
     start_ = {127, 28};
     goal_ = {146, 436};
   }
 
-  std::unique_ptr<Image> img_;
   Grid2DEnvironment::ObstacleData obstacle_data_;
   Grid2DEnvironment::Config env_config_;
   Position start_;
   Position goal_;
 };
 
-BENCHMARK_DEFINE_F(BenchmarkPlanner, BenchmarkAStarGrid2dPlanner)
+BENCHMARK_DEFINE_F(BenchmarkGrid2dPlanner, AStar)
 (benchmark::State& state) {
   AStarGrid2DPlanner planner(env_config_);
   if (!planner.SetObstacleData(&obstacle_data_)) {
@@ -87,11 +95,11 @@ BENCHMARK_DEFINE_F(BenchmarkPlanner, BenchmarkAStarGrid2dPlanner)
     }
   }
 }
-BENCHMARK_REGISTER_F(BenchmarkPlanner, BenchmarkAStarGrid2dPlanner)
+BENCHMARK_REGISTER_F(BenchmarkGrid2dPlanner, AStar)
     ->Unit(::benchmark::kMillisecond)
     ->MinTime(1.0);
 
-BENCHMARK_DEFINE_F(BenchmarkPlanner, BenchmarkDStarLiteGrid2dPlanner)
+BENCHMARK_DEFINE_F(BenchmarkGrid2dPlanner, DStarLite)
 (benchmark::State& state) {
   DStarLiteGrid2DPlanner planner(env_config_);
   if (!planner.SetObstacleData(&obstacle_data_)) {
@@ -106,9 +114,68 @@ BENCHMARK_DEFINE_F(BenchmarkPlanner, BenchmarkDStarLiteGrid2dPlanner)
     }
   }
 }
-BENCHMARK_REGISTER_F(BenchmarkPlanner, BenchmarkDStarLiteGrid2dPlanner)
+BENCHMARK_REGISTER_F(BenchmarkGrid2dPlanner, DStarLite)
     ->Unit(::benchmark::kMillisecond)
     ->MinTime(2.0);
+
+class BenchmarkSE2Planner : public BenchmarkPlanner {
+ public:
+  using Pose2D = SE2PlannerBase::Pose2D;
+
+  BenchmarkSE2Planner() {
+    obstacle_data_ = Eigen::Map<const SE2Environment::ObstacleData>(
+        img_->data(), img_->height(), img_->width());
+    env_config_.valid_state_threshold = 15;
+
+    start_ = {127, 28, M_PI_2};
+    goal_ = {146, 436, M_PI_2};
+  }
+
+  SE2Environment::ObstacleData obstacle_data_;
+  SE2Environment::Config env_config_;
+  Pose2D start_;
+  Pose2D goal_;
+};
+
+const ActionSet2D& get_benchmark_primitives();
+
+BENCHMARK_DEFINE_F(BenchmarkSE2Planner, AStar)
+(benchmark::State& state) {
+  AStarSE2Planner planner(env_config_, &get_benchmark_primitives());
+  if (!planner.SetObstacleData(&obstacle_data_)) {
+    state.SkipWithError("Failed to set obstacle data!");
+    return;
+  }
+
+  std::vector<Pose2D> path;
+  for (auto _ : state) {
+    if (planner.PlanPath(start_, goal_, {}, path) != PlannerStatus::kSuccess) {
+      state.SkipWithError("Failed to generate path!");
+    }
+  }
+}
+BENCHMARK_REGISTER_F(BenchmarkSE2Planner, AStar)
+    ->Unit(::benchmark::kMillisecond)
+    ->MinTime(4.0);
+
+BENCHMARK_DEFINE_F(BenchmarkSE2Planner, DStarLite)
+(benchmark::State& state) {
+  DStarLiteSE2Planner planner(env_config_, &get_benchmark_primitives());
+  if (!planner.SetObstacleData(&obstacle_data_)) {
+    state.SkipWithError("Failed to set obstacle data!");
+    return;
+  }
+
+  std::vector<Pose2D> path;
+  for (auto _ : state) {
+    if (planner.PlanPath(start_, goal_, {}, path) != PlannerStatus::kSuccess) {
+      state.SkipWithError("Failed to generate path!");
+    }
+  }
+}
+BENCHMARK_REGISTER_F(BenchmarkSE2Planner, DStarLite)
+    ->Unit(::benchmark::kMillisecond)
+    ->MinTime(4.0);
 
 }  // namespace optimus
 

@@ -121,12 +121,26 @@ genrule(
     tools = [":generate_benchmark_data"],
 )
 
+genrule(
+    name = "benchmark_primitives",
+    outs = ["benchmark_primitives.cc"],
+    cmd = " ".join([
+        "$(location :primitive_exporter)",
+        "--grid_connectivity=32",
+        "--max_angle_idx_diff=2",
+        "--min_radius_grid=4.95",
+        "--output=$@",
+    ]),
+    tools = [":primitive_exporter"],
+)
+
 # Profiling:
-# bazel run //optimus/path_planning:benchmark_planners --config=profile --run_under="perf record --call-graph dwarf -o `pwd`/perf.data -F 10000" -- --benchmark_filter=BenchmarkPlanner/BenchmarkDStarLiteGrid2dPlanner/*
+# bazel run //optimus/path_planning:benchmark_planners --config=profile --run_under="perf record --call-graph dwarf -o `pwd`/perf.data -F 10000" -- --benchmark_filter=BenchmarkGrid2dPlanner/AStar/*
 cc_binary(
     name = "benchmark_planners",
     srcs = [
         "benchmark_planners.cc",
+        ":benchmark_primitives",
     ],
     copts = COPTS,
     data = [":benchmark_data"],
