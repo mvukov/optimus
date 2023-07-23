@@ -34,11 +34,11 @@ cc_library(
     name = "path_planning",
     srcs = [
         "action_set_2d.cc",
-        "astar_se2_planner.cc",
         "grid_2d_planner.cc",
         "grid_utils.cc",
         "planner_algorithm.cc",
         "se2_environment.cc",
+        "se2_planner.cc",
     ],
     hdrs = [
         "action_set_2d.h",
@@ -54,6 +54,7 @@ cc_library(
         "planner_algorithm.h",
         "priority_queue_utils.h",
         "se2_environment.h",
+        "se2_planner.h",
     ],
     copts = COPTS,
     visibility = ["//visibility:public"],

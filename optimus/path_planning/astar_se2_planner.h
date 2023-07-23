@@ -18,42 +18,11 @@
 
 #include "optimus/path_planning/astar_planner.h"
 #include "optimus/path_planning/se2_environment.h"
+#include "optimus/path_planning/se2_planner.h"
 
 namespace optimus {
 
-class AStarSE2Planner {
- public:
-  using Algorithm = AStarPlanner<SE2Environment>;
-
-  struct Pose2D {
-    float x;
-    float y;
-    float theta;
-  };
-
-  AStarSE2Planner(const SE2Environment::Config& config,
-                  const ActionSet2D* action_set)
-      : env_(config, action_set), algorithm_(&env_) {}
-
-  [[nodiscard]] bool SetObstacleData(
-      const SE2Environment::ObstacleData* obstacle_data) {
-    return env_.SetObstacleData(obstacle_data);
-  }
-
-  [[nodiscard]] PlannerStatus PlanPath(const Pose2D& start, const Pose2D& goal,
-                                       const UserCallback& user_callback,
-                                       std::vector<Pose2D>& path);
-
-  const auto& env() const { return env_; }
-
- private:
-  int GetStateIndex(const Pose2D& t) const;
-  PlannerStatus ReconstructPath(const std::vector<int>& path_indices,
-                                std::vector<Pose2D>& path) const;
-
-  SE2Environment env_;
-  Algorithm algorithm_;
-};
+using AStarSE2Planner = SE2Planner<AStarPlanner<SE2Environment>>;
 
 }  // namespace optimus
 
