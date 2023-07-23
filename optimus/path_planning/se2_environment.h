@@ -33,10 +33,10 @@ class SE2Environment {
   using ObstacleDataScalar = std::uint8_t;
 
   struct Config {
-    ObstacleDataScalar valid_state_threshold = 1;
-    float swath_cost_multiplier = 1.0f;
+    ObstacleDataScalar valid_state_threshold = 0;
+    float swath_cost_multiplier = 0;
     float length_cost_multiplier = 1.0f;
-    float abs_angle_diff_cost_multiplier = 1.0f;
+    float abs_angle_diff_cost_multiplier = 0;
 
     [[nodiscard]] bool Validate() const;
   };

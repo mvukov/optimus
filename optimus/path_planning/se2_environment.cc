@@ -18,13 +18,13 @@
 namespace optimus {
 
 bool SE2Environment::Config::Validate() const {
-  if (swath_cost_multiplier < 0.) {
+  if (swath_cost_multiplier < 0) {
     return false;
   }
-  if (length_cost_multiplier < 0.) {
+  if (length_cost_multiplier < 0) {
     return false;
   }
-  if (abs_angle_diff_cost_multiplier < 0.) {
+  if (abs_angle_diff_cost_multiplier < 0) {
     return false;
   }
   return true;

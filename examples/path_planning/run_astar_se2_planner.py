@@ -84,9 +84,6 @@ def main():
 
   env_config = py_path_planning.SE2Environment.Config()
   env_config.valid_state_threshold = valid_state_threshold
-  env_config.swath_cost_multiplier = 1.0
-  env_config.length_cost_multiplier = 1.0
-  env_config.abs_angle_diff_cost_multiplier = 1.0
 
   planner = py_path_planning.ExampleDStarLiteSE2Planner(env_config)
   start = Pose2D(127, 28, numpy.pi / 2)
