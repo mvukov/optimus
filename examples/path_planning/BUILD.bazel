@@ -43,8 +43,8 @@ py_library(
 )
 
 py_binary(
-    name = "run_astar_se2_planner",
-    srcs = ["run_astar_se2_planner.py"],
+    name = "run_se2_planners",
+    srcs = ["run_se2_planners.py"],
     deps = [
         ":py_path_planning",
         ":utils",

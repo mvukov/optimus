@@ -22,7 +22,7 @@ matplotlib.use('QtAgg')
 
 
 def plot_results(path: numpy.ndarray, ax: matplotlib.axes.Axes,
-                 img: numpy.ndarray, color_map: str):
+                 img: numpy.ndarray, color_map: str, title: str):
   num_rows, num_cols = img.shape
   ax.imshow(img,
             cmap=pyplot.get_cmap(color_map),
@@ -37,6 +37,7 @@ def plot_results(path: numpy.ndarray, ax: matplotlib.axes.Axes,
   ax.grid()
   ax.set_xlabel('x')
   ax.set_ylabel('y')
+  ax.set_title(title)
 
 
 def run_planner(planner, obstacle_data, start, goal):
@@ -70,8 +71,12 @@ def main():
   dstar_lite_path = run_planner(dstar_lite_planner, obstacle_data, start, goal)
 
   _, (ax1, ax2) = pyplot.subplots(1, 2, sharex=True, sharey=True)
-  plot_results(astar_path, ax1, obstacle_data, color_map='Greys')
-  plot_results(dstar_lite_path, ax2, obstacle_data, color_map='Greys')
+  plot_results(astar_path, ax1, obstacle_data, color_map='Greys', title='A*')
+  plot_results(dstar_lite_path,
+               ax2,
+               obstacle_data,
+               color_map='Greys',
+               title='D*Lite')
   pyplot.show()
 
 
