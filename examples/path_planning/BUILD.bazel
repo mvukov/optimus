@@ -51,7 +51,6 @@ py_binary(
         requirement("matplotlib"),
         requirement("numpy"),
         requirement("PySide6"),
-        requirement("scikit-fmm"),
     ],
 )
 
