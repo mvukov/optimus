@@ -21,6 +21,7 @@
 #include "optimus/path_planning/astar_grid_2d_planner.h"
 #include "optimus/path_planning/astar_se2_planner.h"
 #include "optimus/path_planning/dstar_lite_grid_2d_planner.h"
+#include "optimus/path_planning/dstar_lite_se2_planner.h"
 #include "optimus/path_planning/se2_environment.h"
 
 namespace py = pybind11;
@@ -33,13 +34,14 @@ const ActionSet2D& get_example_primitives();
 // Implements an example SE2 (lattice) planner.
 // Look at the build file to learn how to set up code-generation of motion
 // primitives.
-class ExampleAStarSE2Planner {
+template <class Planner>
+class ExampleSE2Planner {
  public:
-  using Pose2D = AStarSE2Planner::Pose2D;
+  using Pose2D = SE2PlannerBase::Pose2D;
 
   // Note here how the code-generated primitives g_example_primitives are
   // interfaced to the planner implementation.
-  explicit ExampleAStarSE2Planner(const SE2Environment::Config& config)
+  explicit ExampleSE2Planner(const SE2Environment::Config& config)
       : planner_(config, &get_example_primitives()) {}
 
   // This implementation is Python specific where error handling is handled with
@@ -73,12 +75,16 @@ class ExampleAStarSE2Planner {
 
   auto planning_time() const { return planning_time_; }
   auto num_expansions() const { return num_expansions_; }
+  auto path_cost() const { return planner_.GetPathCost(); }
 
  private:
-  AStarSE2Planner planner_;
+  Planner planner_;
   double planning_time_ = 0;
   int num_expansions_ = 0;
 };
+
+using ExampleAStarSE2Planner = ExampleSE2Planner<AStarSE2Planner>;
+using ExampleDStarLiteSE2Planner = ExampleSE2Planner<DStarLiteSE2Planner>;
 
 template <class Planner>
 class PyGrid2DPlanner {
@@ -129,24 +135,6 @@ using PyAStarGrid2DPlanner = PyGrid2DPlanner<AStarGrid2DPlanner>;
 using PyDStarLiteGrid2DPlanner = PyGrid2DPlanner<DStarLiteGrid2DPlanner>;
 
 PYBIND11_MODULE(py_path_planning, m) {
-  py::class_<MotionPrimitive2D>(m, "MotionPrimitive2D")
-      .def(py::init<>())
-      .def_readwrite("length", &MotionPrimitive2D::length)
-      .def_readwrite("abs_angle_diff", &MotionPrimitive2D::abs_angle_diff)
-      .def_readwrite("x", &MotionPrimitive2D::x)
-      .def_readwrite("y", &MotionPrimitive2D::y)
-      .def_readwrite("theta", &MotionPrimitive2D::theta)
-      .def_readwrite("swath_x", &MotionPrimitive2D::swath_x)
-      .def_readwrite("swath_y", &MotionPrimitive2D::swath_y)
-      .def_readwrite("end_angle_idx", &MotionPrimitive2D::end_angle_idx)
-      .def_readwrite("end_x_idx", &MotionPrimitive2D::end_x_idx)
-      .def_readwrite("end_y_idx", &MotionPrimitive2D::end_y_idx);
-
-  py::class_<ActionSet2D>(m, "ActionSet2D")
-      .def(py::init<>())
-      .def_readwrite("angles", &ActionSet2D::angles)
-      .def_readwrite("motion_primitives", &ActionSet2D::motion_primitives);
-
   auto se2_environment = py::class_<SE2Environment>(m, "SE2Environment");
 
   py::class_<SE2Environment::Config>(se2_environment, "Config")
@@ -160,16 +148,26 @@ PYBIND11_MODULE(py_path_planning, m) {
       .def_readwrite("abs_angle_diff_cost_multiplier",
                      &SE2Environment::Config::abs_angle_diff_cost_multiplier);
 
-  auto astar_se2_planner =
-      py::class_<ExampleAStarSE2Planner>(m, "ExampleAStarSE2Planner")
-          .def(py::init<const SE2Environment::Config&>(), py::arg("config"))
-          .def("plan_path", &ExampleAStarSE2Planner::PyPlanPath)
-          .def_property_readonly("planning_time",
-                                 &ExampleAStarSE2Planner::planning_time)
-          .def_property_readonly("num_expansions",
-                                 &ExampleAStarSE2Planner::num_expansions);
+  py::class_<ExampleAStarSE2Planner>(m, "ExampleAStarSE2Planner")
+      .def(py::init<const SE2Environment::Config&>(), py::arg("config"))
+      .def("plan_path", &ExampleAStarSE2Planner::PyPlanPath)
+      .def_property_readonly("planning_time",
+                             &ExampleAStarSE2Planner::planning_time)
+      .def_property_readonly("num_expansions",
+                             &ExampleAStarSE2Planner::num_expansions)
+      .def_property_readonly("path_cost", &ExampleAStarSE2Planner::path_cost);
 
-  py::class_<AStarSE2Planner::Pose2D>(astar_se2_planner, "Pose2D")
+  py::class_<ExampleDStarLiteSE2Planner>(m, "ExampleDStarLiteSE2Planner")
+      .def(py::init<const SE2Environment::Config&>(), py::arg("config"))
+      .def("plan_path", &ExampleDStarLiteSE2Planner::PyPlanPath)
+      .def_property_readonly("planning_time",
+                             &ExampleDStarLiteSE2Planner::planning_time)
+      .def_property_readonly("num_expansions",
+                             &ExampleDStarLiteSE2Planner::num_expansions)
+      .def_property_readonly("path_cost",
+                             &ExampleDStarLiteSE2Planner::path_cost);
+
+  py::class_<SE2PlannerBase::Pose2D>(m, "Pose2D")
       .def(py::init<>())
       .def(py::init<float, float, float>())
       .def_readwrite("x", &AStarSE2Planner::Pose2D::x)

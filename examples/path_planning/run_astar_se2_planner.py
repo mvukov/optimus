@@ -21,13 +21,13 @@ from examples.path_planning import utils
 
 matplotlib.use('QtAgg')
 
-Pose2D = py_path_planning.ExampleAStarSE2Planner.Pose2D
+Pose2D = py_path_planning.Pose2D
 
 
-def create_distance_field(img: numpy.ndarray):
+def create_distance_field(img: numpy.ndarray, threshold: int):
 
   def threshold_img(value):
-    if value == 0:
+    if value <= threshold:
       return 1
     return 0
 
@@ -67,10 +67,12 @@ def plot_results(path: numpy.ndarray, ax: matplotlib.axes.Axes,
 def main():
   obstacle_data = utils.load_obstacle_data()
 
-  distance_field = create_distance_field(obstacle_data)
+  obstacle_threshold = 15
+
+  distance_field = create_distance_field(obstacle_data, obstacle_threshold)
   distance_field = distance_field.astype(numpy.uint8)
 
-  valid_state_threshold = 15
+  valid_state_threshold = obstacle_threshold
 
   def threshold_distance_field(squared_value):
     df_threshold = valid_state_threshold + 1
@@ -86,20 +88,21 @@ def main():
   env_config.length_cost_multiplier = 1.0
   env_config.abs_angle_diff_cost_multiplier = 1.0
 
-  planner = py_path_planning.ExampleAStarSE2Planner(env_config)
+  planner = py_path_planning.ExampleDStarLiteSE2Planner(env_config)
   start = Pose2D(127, 28, numpy.pi / 2)
   goal = Pose2D(146, 436, numpy.pi / 2)
 
   try:
     print('First (cold) run.')
-    path = planner.plan_path(distance_field, start, goal)
+    path = planner.plan_path(obstacle_data, start, goal)
     print(f'Planning time: {planner.planning_time:.3f} seconds.')
     print(f'Number of expansions: {planner.num_expansions}.')
 
     print('Second (warm) run.')
-    path = planner.plan_path(distance_field, start, goal)
+    path = planner.plan_path(obstacle_data, start, goal)
     print(f'Planning time: {planner.planning_time:.3f} seconds.')
     print(f'Number of expansions: {planner.num_expansions}.')
+    print(f'Path cost: {planner.path_cost:.3f}')
 
   except RuntimeError as ex:
     print(ex)
