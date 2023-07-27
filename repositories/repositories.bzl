@@ -32,17 +32,17 @@ def optimus_repositories():
     maybe(
         http_archive,
         name = "com_github_nelhage_rules_boost",
-        sha256 = "0b4c4f709768108a6e0bec1727e32e646292de6b47bc2e24fc2b51cd8271fd05",
-        strip_prefix = "rules_boost-0ba0fd7d7f812deb9cac879ee6cbf237276db96d",
-        urls = ["https://github.com/nelhage/rules_boost/archive/0ba0fd7d7f812deb9cac879ee6cbf237276db96d.zip"],
+        sha256 = "b375550dde177abb48d9fc6edf63a7850aec350cdb4dc3360a456ea0fbd7d45c",
+        strip_prefix = "rules_boost-45015796689f17e9fc7972073eb7830784c40ee9",
+        urls = ["https://github.com/nelhage/rules_boost/archive/45015796689f17e9fc7972073eb7830784c40ee9.zip"],
     )
 
     maybe(
         http_archive,
         name = "rules_python",
-        sha256 = "84aec9e21cc56fbc7f1335035a71c850d1b9b5cc6ff497306f84cced9a769841",
-        strip_prefix = "rules_python-0.23.1",
-        url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.23.1.tar.gz",
+        sha256 = "0a8003b044294d7840ac7d9d73eef05d6ceb682d7516781a4ec62eeb34702578",
+        strip_prefix = "rules_python-0.24.0",
+        url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.24.0.tar.gz",
     )
 
     maybe(
@@ -65,9 +65,9 @@ def optimus_repositories():
         http_archive,
         name = "pybind11",
         build_file = "//repositories:pybind11.BUILD.bazel",
-        sha256 = "832e2f309c57da9c1e6d4542dedd34b24e4192ecb4d62f6f4866a737454c9970",
-        strip_prefix = "pybind11-2.10.4",
-        url = "https://github.com/pybind/pybind11/archive/v2.10.4.tar.gz",
+        sha256 = "d475978da0cdc2d43b73f30910786759d593a9d8ee05b1b6846d1eb16c6d2e0c",
+        strip_prefix = "pybind11-2.11.1",
+        url = "https://github.com/pybind/pybind11/archive/v2.11.1.tar.gz",
     )
 
     maybe(
