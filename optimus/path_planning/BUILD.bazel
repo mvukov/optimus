@@ -49,6 +49,7 @@ cc_library(
         "dstar_lite_grid_2d_planner.h",
         "dstar_lite_planner.h",
         "dstar_lite_se2_planner.h",
+        "grid_2d.h",
         "grid_2d_environment.h",
         "grid_2d_planner.h",
         "grid_utils.h",

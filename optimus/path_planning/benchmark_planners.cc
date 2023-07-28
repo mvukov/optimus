@@ -66,15 +66,15 @@ class BenchmarkGrid2dPlanner : public BenchmarkPlanner {
   using Position = Grid2DPlannerBase::Position;
 
   BenchmarkGrid2dPlanner() {
-    obstacle_data_ = Eigen::Map<const Grid2DEnvironment::ObstacleData>(
-        img_->data(), img_->height(), img_->width());
+    grid_2d_map_ = std::make_unique<Grid2DMap>(img_->data(), img_->height(),
+                                               img_->width());
     env_config_.valid_state_threshold = 15;
 
     start_ = {127, 28};
     goal_ = {146, 436};
   }
 
-  Grid2DEnvironment::ObstacleData obstacle_data_;
+  std::unique_ptr<Grid2DMap> grid_2d_map_;
   Grid2DEnvironment::Config env_config_;
   Position start_;
   Position goal_;
@@ -83,7 +83,7 @@ class BenchmarkGrid2dPlanner : public BenchmarkPlanner {
 BENCHMARK_DEFINE_F(BenchmarkGrid2dPlanner, AStar)
 (benchmark::State& state) {
   AStarGrid2DPlanner planner(env_config_);
-  if (!planner.SetObstacleData(&obstacle_data_)) {
+  if (!planner.SetGrid2D(grid_2d_map_.get())) {
     state.SkipWithError("Failed to set obstacle data!");
     return;
   }
@@ -102,7 +102,7 @@ BENCHMARK_REGISTER_F(BenchmarkGrid2dPlanner, AStar)
 BENCHMARK_DEFINE_F(BenchmarkGrid2dPlanner, DStarLite)
 (benchmark::State& state) {
   DStarLiteGrid2DPlanner planner(env_config_);
-  if (!planner.SetObstacleData(&obstacle_data_)) {
+  if (!planner.SetGrid2D(grid_2d_map_.get())) {
     state.SkipWithError("Failed to set obstacle data!");
     return;
   }

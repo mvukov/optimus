@@ -94,10 +94,11 @@ class PyGrid2DPlanner {
   explicit PyGrid2DPlanner(const Grid2DEnvironment::Config& config)
       : planner_(config) {}
 
-  std::vector<Position> PyPlanPath(
-      const Grid2DEnvironment::ObstacleData& obstacle_data,
-      const Position& start, const Position& goal) {
-    if (!planner_.SetObstacleData(&obstacle_data)) {
+  std::vector<Position> PyPlanPath(const Grid2D& grid_2d, const Position& start,
+                                   const Position& goal) {
+    auto grid_2d_map = std::make_unique<Grid2DMap>(
+        grid_2d.data(), grid_2d.rows(), grid_2d.cols());
+    if (!planner_.SetGrid2D(grid_2d_map.get())) {
       throw std::runtime_error("Failed to set obstacle data!");
     }
     std::vector<Position> path;

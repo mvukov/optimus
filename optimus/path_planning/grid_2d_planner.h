@@ -17,6 +17,7 @@
 #include <optional>
 #include <vector>
 
+#include "optimus/path_planning/grid_2d.h"
 #include "optimus/path_planning/grid_2d_environment.h"
 #include "optimus/path_planning/planner_algorithm.h"
 
@@ -31,8 +32,7 @@ class Grid2DPlannerBase {
 
   virtual ~Grid2DPlannerBase() = default;
 
-  [[nodiscard]] bool SetObstacleData(
-      const Grid2DEnvironment::ObstacleData* obstacle_data);
+  [[nodiscard]] bool SetGrid2D(const Grid2DMap* grid_2d);
 
   [[nodiscard]] virtual PlannerStatus PlanPath(
       const Position& start, const Position& goal,

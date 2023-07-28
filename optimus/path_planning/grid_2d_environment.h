@@ -14,72 +14,64 @@
 #ifndef OPTIMUS_PATH_PLANNING_GRID_2D_ENVIRONMENT_H_
 #define OPTIMUS_PATH_PLANNING_GRID_2D_ENVIRONMENT_H_
 
-#include <cstdint>
 #include <vector>
 
-#include "Eigen/Core"
-
 #include "optimus/path_planning/common_utils.h"
+#include "optimus/path_planning/grid_2d.h"
 #include "optimus/path_planning/grid_utils.h"
 
 namespace optimus {
 
 class Grid2DEnvironment {
  public:
-  using ObstacleDataScalar = std::uint8_t;
-
   enum class Type {
     k8WayConnected,
   };
 
   struct Config {
     Type type = Type::k8WayConnected;
-    ObstacleDataScalar valid_state_threshold = 0;
+    Grid2DScalar valid_state_threshold = 0;
   };
-
-  using ObstacleData = Eigen::Matrix<ObstacleDataScalar, Eigen::Dynamic,
-                                     Eigen::Dynamic, Eigen::RowMajor>;
 
   explicit Grid2DEnvironment(const Config& config)
       : config_(config), max_num_neighbors_(GetNumNeighbors(config_.type)) {}
 
-  bool SetObstacleData(const ObstacleData* obstacle_data) {
-    if (obstacle_data == nullptr) {
+  bool SetGrid2D(const Grid2DMap* grid_2d) {
+    if (grid_2d == nullptr) {
       return false;
     }
-    obstacle_data_ = obstacle_data;
+    grid_2d_ = grid_2d;
     return true;
   }
 
   [[nodiscard]] bool Validate() const {
-    if (obstacle_data_ == nullptr) {
+    if (grid_2d_ == nullptr) {
       return false;
     }
-    return obstacle_data_->rows() > 0 && obstacle_data_->cols() > 0;
+    return grid_2d_->rows() > 0 && grid_2d_->cols() > 0;
   }
 
   [[nodiscard]] bool Initialize() { return true; }  // NOLINT
 
   [[nodiscard]] bool IsStateIndexValid(int index) const {
-    return index >= 0 && index < obstacle_data_->size();
+    return index >= 0 && index < grid_2d_->size();
   }
 
   [[nodiscard]] bool IsStateValid(int index) const {
-    return *(obstacle_data_->data() + index) <= config_.valid_state_threshold;
+    return *(grid_2d_->data() + index) <= config_.valid_state_threshold;
   }
 
-  [[nodiscard]] int GetStateSpaceSize() const { return obstacle_data_->size(); }
+  [[nodiscard]] int GetStateSpaceSize() const { return grid_2d_->size(); }
 
   [[nodiscard]] int GetMaxNumNeighbors() const { return max_num_neighbors_; }
 
   [[nodiscard]] float GetHeuristicCost(int start, int goal) const {
-    return GetHypot(start, goal, obstacle_data_->cols());
+    return GetHypot(start, goal, grid_2d_->cols());
   }
 
   void GetNeighborsAndCosts(int pivot, std::vector<int>& neighbors,
                             std::vector<float>& pivot_to_neighbor_costs) {
-    Get8NeighborsOn2dGrid(pivot, obstacle_data_->cols(), obstacle_data_->rows(),
-                          neighbors);
+    Get8NeighborsOn2dGrid(pivot, grid_2d_->cols(), grid_2d_->rows(), neighbors);
     Set8PivotToNeighborCosts(pivot_to_neighbor_costs);
 
     for (size_t el = 0; el < neighbors.size(); ++el) {
@@ -93,11 +85,11 @@ class Grid2DEnvironment {
   [[nodiscard]] int GetMaxNumPredecessors() const { return max_num_neighbors_; }
 
   void GetPredecessors(int pivot, std::vector<int>& predecessors) const {
-    Get8NeighborsOn2dGrid(pivot, obstacle_data_->cols(), obstacle_data_->rows(),
+    Get8NeighborsOn2dGrid(pivot, grid_2d_->cols(), grid_2d_->rows(),
                           predecessors);
   }
 
-  const auto& obstacle_data() const { return *obstacle_data_; }
+  const auto* grid_2d() const { return grid_2d_; }
 
  private:
   [[nodiscard]] static int GetNumNeighbors(Type type) {
@@ -109,7 +101,7 @@ class Grid2DEnvironment {
   }
 
   const Config config_;
-  const ObstacleData* obstacle_data_ = nullptr;
+  const Grid2DMap* grid_2d_ = nullptr;
   const int max_num_neighbors_;
 };
 
