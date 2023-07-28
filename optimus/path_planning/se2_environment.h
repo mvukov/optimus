@@ -20,20 +20,17 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Eigen/Core"
-
 #include "optimus/path_planning/action_set_2d.h"
 #include "optimus/path_planning/common_utils.h"
+#include "optimus/path_planning/grid_2d.h"
 #include "optimus/path_planning/grid_utils.h"
 
 namespace optimus {
 
 class SE2Environment {
  public:
-  using ObstacleDataScalar = std::uint8_t;
-
   struct Config {
-    ObstacleDataScalar valid_state_threshold = 0;
+    Grid2DScalar valid_state_threshold = 0;
     float swath_cost_multiplier = 0;
     float length_cost_multiplier = 1.0f;
     float abs_angle_diff_cost_multiplier = 0;
@@ -46,13 +43,10 @@ class SE2Environment {
     int y = 0;
   };
 
-  using ObstacleData = Eigen::Matrix<ObstacleDataScalar, Eigen::Dynamic,
-                                     Eigen::Dynamic, Eigen::RowMajor>;
-
   // action_set must not change in runtime.
   SE2Environment(const Config& config, const ActionSet2D* action_set);
 
-  bool SetObstacleData(const ObstacleData* obstacle_data);
+  bool SetGrid2D(const Grid2DMap* grid_2d);
 
   bool Validate() const;
 
@@ -61,14 +55,13 @@ class SE2Environment {
   bool IsStateIndexValid(int index) const {
     const auto xy_index = index >> num_angle_bits_;
     const auto angle_index = index & angle_mask_;
-    return xy_index >= 0 && xy_index < obstacle_data_->size() &&
+    return xy_index >= 0 && xy_index < grid_2d_->size() &&
            angle_index < static_cast<int>(action_set_->angles.size());
   }
 
   bool IsStateValid(int index) const {
     const auto xy_index = index >> num_angle_bits_;
-    return *(obstacle_data_->data() + xy_index) <=
-           config_.valid_state_threshold;
+    return *(grid_2d_->data() + xy_index) <= config_.valid_state_threshold;
   }
 
   int GetStateSpaceSize() const { return state_space_size_; }
@@ -78,7 +71,7 @@ class SE2Environment {
   float GetHeuristicCost(int start, int goal) const {
     // TODO(mvukov) If distance to the goal is closer than a threshold, then we
     // should also penalize the angle!
-    return GetHypot(start, goal, obstacle_data_->cols());
+    return GetHypot(start, goal, grid_2d_->cols());
   }
 
   void GetNeighborsAndCosts(int pivot, std::vector<int>& neighbors,
@@ -86,7 +79,7 @@ class SE2Environment {
 
   GridCoords ToGridCoords(int state_index) const {
     const auto xy_index = state_index >> num_angle_bits_;
-    const int grid_width = obstacle_data_->cols();
+    const int grid_width = grid_2d_->cols();
     return {xy_index % grid_width, xy_index / grid_width};
   }
 
@@ -102,7 +95,7 @@ class SE2Environment {
 
   void GetPredecessors(int pivot, std::vector<int>& predecessors) const;
 
-  const auto& obstacle_data() const { return *obstacle_data_; }
+  const auto* grid_2d() const { return grid_2d_; }
   const auto& action_set() const { return *action_set_; }
   const auto& config() const { return config_; }
   int num_angle_bits() const { return num_angle_bits_; }
@@ -113,7 +106,7 @@ class SE2Environment {
 
  private:
   const Config config_;
-  const ObstacleData* obstacle_data_ = nullptr;
+  const Grid2DMap* grid_2d_ = nullptr;
   const ActionSet2D* action_set_ = nullptr;
   int num_angle_bits_ = 0;
   int angle_mask_ = 0;

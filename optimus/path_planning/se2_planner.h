@@ -36,8 +36,7 @@ class SE2PlannerBase {
 
   ~SE2PlannerBase() = default;
 
-  [[nodiscard]] bool SetObstacleData(
-      const SE2Environment::ObstacleData* obstacle_data);
+  [[nodiscard]] bool SetGrid2D(const Grid2DMap* grid_2d);
 
   [[nodiscard]] virtual PlannerStatus PlanPath(
       const Pose2D& start, const Pose2D& goal,

@@ -41,19 +41,19 @@ SE2Environment::SE2Environment(const Config& config,
   angle_mask_ = GetBitMask(num_angle_bits_);
 }
 
-bool SE2Environment::SetObstacleData(const ObstacleData* obstacle_data) {
-  if (obstacle_data == nullptr) {
+bool SE2Environment::SetGrid2D(const Grid2DMap* grid_2d) {
+  if (grid_2d == nullptr) {
     return false;
   }
-  obstacle_data_ = obstacle_data;
+  grid_2d_ = grid_2d;
   return true;
 }
 
 bool SE2Environment::Validate() const {
-  if (obstacle_data_ == nullptr) {
+  if (grid_2d_ == nullptr) {
     return false;
   }
-  if (obstacle_data_->cols() <= 0 || obstacle_data_->rows() <= 0) {
+  if (grid_2d_->cols() <= 0 || grid_2d_->rows() <= 0) {
     return false;
   }
   if (!action_set_->Validate()) {
@@ -63,11 +63,11 @@ bool SE2Environment::Validate() const {
 }
 
 bool SE2Environment::Initialize() {
-  OPTIMUS_CHECK(obstacle_data_ != nullptr);
+  OPTIMUS_CHECK(grid_2d_ != nullptr);
 
   // TODO(mvukov) For num_angles != 2^n the actual state space is in fact
   // smaller.
-  state_space_size_ = obstacle_data_->size() * (angle_mask_ + 1);
+  state_space_size_ = grid_2d_->size() * (angle_mask_ + 1);
   if (state_space_size_ <= 0) {
     return false;
   }
@@ -95,7 +95,7 @@ bool SE2Environment::Initialize() {
 void SE2Environment::GetNeighborsAndCosts(
     int pivot, std::vector<int>& neighbors,
     std::vector<float>& pivot_to_neighbor_costs) {
-  OPTIMUS_CHECK(obstacle_data_ != nullptr);
+  OPTIMUS_CHECK(grid_2d_ != nullptr);
 
   std::fill(neighbors.begin(), neighbors.end(), kInvalidIndex);
   std::fill(pivot_to_neighbor_costs.begin(), pivot_to_neighbor_costs.end(),
@@ -108,8 +108,8 @@ void SE2Environment::GetNeighborsAndCosts(
   const auto xy_coords = ToGridCoords(pivot);
   const auto angle_index = pivot & angle_mask_;
 
-  const int grid_width = obstacle_data_->cols();
-  const int grid_height = obstacle_data_->rows();
+  const int grid_width = grid_2d_->cols();
+  const int grid_height = grid_2d_->rows();
 
   const int num_angles = action_set_->angles.size();
   const auto primitive_index_start =
@@ -135,7 +135,7 @@ void SE2Environment::GetNeighborsAndCosts(
         discard = true;
         break;
       }
-      const auto candidate_cost = (*obstacle_data_)(candidate_y, candidate_x);
+      const auto candidate_cost = (*grid_2d_)(candidate_y, candidate_x);
       // TODO(mvukov) Should call IsStateValid here!
       if (candidate_cost > config_.valid_state_threshold) {
         discard = true;
@@ -168,8 +168,8 @@ void SE2Environment::GetPredecessors(int pivot,
   const auto xy_coords = ToGridCoords(pivot);
   const auto angle_index = pivot & angle_mask_;
 
-  const int grid_width = obstacle_data_->cols();
-  const int grid_height = obstacle_data_->rows();
+  const int grid_width = grid_2d_->cols();
+  const int grid_height = grid_2d_->rows();
   std::fill(predecessors.begin(), predecessors.end(), kInvalidIndex);
   int offset = 0;
   for (const auto& predecessor_state :

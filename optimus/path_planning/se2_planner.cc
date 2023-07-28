@@ -24,9 +24,8 @@ constexpr int kMinPathLength = 2;
 
 }  // namespace
 
-bool SE2PlannerBase::SetObstacleData(
-    const SE2Environment::ObstacleData* obstacle_data) {
-  return env_.SetObstacleData(obstacle_data);
+bool SE2PlannerBase::SetGrid2D(const Grid2DMap* grid_2d) {
+  return env_.SetGrid2D(grid_2d);
 }
 
 int SE2PlannerBase::GetStateIndex(const Pose2D& t) const {
@@ -36,7 +35,7 @@ int SE2PlannerBase::GetStateIndex(const Pose2D& t) const {
   if (angle_index == kInvalidIndex) {
     return kInvalidIndex;
   }
-  return ((y * env_.obstacle_data().cols() + x) << env_.num_angle_bits()) +
+  return ((y * env_.grid_2d()->cols() + x) << env_.num_angle_bits()) +
          angle_index;
 }
 

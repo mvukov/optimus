@@ -56,9 +56,13 @@ class BenchmarkPlanner : public benchmark::Fixture {
     img_ = std::make_unique<Image>("optimus/path_planning/scsail.png", 0);
     OPTIMUS_CHECK(img_->data() != nullptr);
     OPTIMUS_CHECK(img_->num_channels() == 1);
+
+    grid_2d_map_ = std::make_unique<Grid2DMap>(img_->data(), img_->height(),
+                                               img_->width());
   }
 
   std::unique_ptr<Image> img_;
+  std::unique_ptr<Grid2DMap> grid_2d_map_;
 };
 
 class BenchmarkGrid2dPlanner : public BenchmarkPlanner {
@@ -66,15 +70,12 @@ class BenchmarkGrid2dPlanner : public BenchmarkPlanner {
   using Position = Grid2DPlannerBase::Position;
 
   BenchmarkGrid2dPlanner() {
-    grid_2d_map_ = std::make_unique<Grid2DMap>(img_->data(), img_->height(),
-                                               img_->width());
     env_config_.valid_state_threshold = 15;
 
     start_ = {127, 28};
     goal_ = {146, 436};
   }
 
-  std::unique_ptr<Grid2DMap> grid_2d_map_;
   Grid2DEnvironment::Config env_config_;
   Position start_;
   Position goal_;
@@ -123,15 +124,12 @@ class BenchmarkSE2Planner : public BenchmarkPlanner {
   using Pose2D = SE2PlannerBase::Pose2D;
 
   BenchmarkSE2Planner() {
-    obstacle_data_ = Eigen::Map<const SE2Environment::ObstacleData>(
-        img_->data(), img_->height(), img_->width());
     env_config_.valid_state_threshold = 15;
 
     start_ = {127, 28, M_PI_2};
     goal_ = {146, 436, M_PI_2};
   }
 
-  SE2Environment::ObstacleData obstacle_data_;
   SE2Environment::Config env_config_;
   Pose2D start_;
   Pose2D goal_;
@@ -142,7 +140,7 @@ const ActionSet2D& get_benchmark_primitives();
 BENCHMARK_DEFINE_F(BenchmarkSE2Planner, AStar)
 (benchmark::State& state) {
   AStarSE2Planner planner(env_config_, &get_benchmark_primitives());
-  if (!planner.SetObstacleData(&obstacle_data_)) {
+  if (!planner.SetGrid2D(grid_2d_map_.get())) {
     state.SkipWithError("Failed to set obstacle data!");
     return;
   }
@@ -161,7 +159,7 @@ BENCHMARK_REGISTER_F(BenchmarkSE2Planner, AStar)
 BENCHMARK_DEFINE_F(BenchmarkSE2Planner, DStarLite)
 (benchmark::State& state) {
   DStarLiteSE2Planner planner(env_config_, &get_benchmark_primitives());
-  if (!planner.SetObstacleData(&obstacle_data_)) {
+  if (!planner.SetGrid2D(grid_2d_map_.get())) {
     state.SkipWithError("Failed to set obstacle data!");
     return;
   }

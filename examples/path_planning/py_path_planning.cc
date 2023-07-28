@@ -46,10 +46,11 @@ class ExampleSE2Planner {
 
   // This implementation is Python specific where error handling is handled with
   // exceptions -- in C++ its handled with status codes.
-  std::vector<Pose2D> PyPlanPath(
-      const SE2Environment::ObstacleData& obstacle_data, const Pose2D& start,
-      const Pose2D& goal) {
-    if (!planner_.SetObstacleData(&obstacle_data)) {
+  std::vector<Pose2D> PyPlanPath(const Grid2D& grid_2d, const Pose2D& start,
+                                 const Pose2D& goal) {
+    auto grid_2d_map = std::make_unique<Grid2DMap>(
+        grid_2d.data(), grid_2d.rows(), grid_2d.cols());
+    if (!planner_.SetGrid2D(grid_2d_map.get())) {
       throw std::runtime_error("Failed to set obstacle data!");
     }
     std::vector<Pose2D> path;
