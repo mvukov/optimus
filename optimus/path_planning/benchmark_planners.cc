@@ -76,25 +76,31 @@ class BenchmarkGrid2dPlanner : public BenchmarkPlanner {
     goal_ = {146, 436};
   }
 
+  void RunBenchmark(benchmark::State& state) {
+    if (!planner_->SetGrid2D(grid_2d_map_.get())) {
+      state.SkipWithError("Failed to set obstacle data!");
+      return;
+    }
+
+    std::vector<Position> path;
+    for (auto _ : state) {
+      if (planner_->PlanPath(start_, goal_, {}, path) !=
+          PlannerStatus::kSuccess) {
+        state.SkipWithError("Failed to generate path!");
+      }
+    }
+  }
+
   Grid2DEnvironment::Config env_config_;
   Position start_;
   Position goal_;
+  std::unique_ptr<Grid2DPlannerBase> planner_;
 };
 
 BENCHMARK_DEFINE_F(BenchmarkGrid2dPlanner, AStar)
 (benchmark::State& state) {
-  AStarGrid2DPlanner planner(env_config_);
-  if (!planner.SetGrid2D(grid_2d_map_.get())) {
-    state.SkipWithError("Failed to set obstacle data!");
-    return;
-  }
-
-  std::vector<Position> path;
-  for (auto _ : state) {
-    if (planner.PlanPath(start_, goal_, {}, path) != PlannerStatus::kSuccess) {
-      state.SkipWithError("Failed to generate path!");
-    }
-  }
+  planner_ = std::make_unique<AStarGrid2DPlanner>(env_config_);
+  RunBenchmark(state);
 }
 BENCHMARK_REGISTER_F(BenchmarkGrid2dPlanner, AStar)
     ->Unit(::benchmark::kMillisecond)
@@ -102,18 +108,8 @@ BENCHMARK_REGISTER_F(BenchmarkGrid2dPlanner, AStar)
 
 BENCHMARK_DEFINE_F(BenchmarkGrid2dPlanner, DStarLite)
 (benchmark::State& state) {
-  DStarLiteGrid2DPlanner planner(env_config_);
-  if (!planner.SetGrid2D(grid_2d_map_.get())) {
-    state.SkipWithError("Failed to set obstacle data!");
-    return;
-  }
-
-  std::vector<Position> path;
-  for (auto _ : state) {
-    if (planner.PlanPath(start_, goal_, {}, path) != PlannerStatus::kSuccess) {
-      state.SkipWithError("Failed to generate path!");
-    }
-  }
+  planner_ = std::make_unique<DStarLiteGrid2DPlanner>(env_config_);
+  RunBenchmark(state);
 }
 BENCHMARK_REGISTER_F(BenchmarkGrid2dPlanner, DStarLite)
     ->Unit(::benchmark::kMillisecond)
@@ -130,27 +126,34 @@ class BenchmarkSE2Planner : public BenchmarkPlanner {
     goal_ = {146, 436, M_PI_2};
   }
 
+  void RunBenchmark(benchmark::State& state) {
+    if (!planner_->SetGrid2D(grid_2d_map_.get())) {
+      state.SkipWithError("Failed to set obstacle data!");
+      return;
+    }
+
+    std::vector<Pose2D> path;
+    for (auto _ : state) {
+      if (planner_->PlanPath(start_, goal_, {}, path) !=
+          PlannerStatus::kSuccess) {
+        state.SkipWithError("Failed to generate path!");
+      }
+    }
+  }
+
   SE2Environment::Config env_config_;
   Pose2D start_;
   Pose2D goal_;
+  std::unique_ptr<SE2PlannerBase> planner_;
 };
 
 const ActionSet2D& get_benchmark_primitives();
 
 BENCHMARK_DEFINE_F(BenchmarkSE2Planner, AStar)
 (benchmark::State& state) {
-  AStarSE2Planner planner(env_config_, &get_benchmark_primitives());
-  if (!planner.SetGrid2D(grid_2d_map_.get())) {
-    state.SkipWithError("Failed to set obstacle data!");
-    return;
-  }
-
-  std::vector<Pose2D> path;
-  for (auto _ : state) {
-    if (planner.PlanPath(start_, goal_, {}, path) != PlannerStatus::kSuccess) {
-      state.SkipWithError("Failed to generate path!");
-    }
-  }
+  planner_ = std::make_unique<AStarSE2Planner>(env_config_,
+                                               &get_benchmark_primitives());
+  RunBenchmark(state);
 }
 BENCHMARK_REGISTER_F(BenchmarkSE2Planner, AStar)
     ->Unit(::benchmark::kMillisecond)
@@ -158,18 +161,9 @@ BENCHMARK_REGISTER_F(BenchmarkSE2Planner, AStar)
 
 BENCHMARK_DEFINE_F(BenchmarkSE2Planner, DStarLite)
 (benchmark::State& state) {
-  DStarLiteSE2Planner planner(env_config_, &get_benchmark_primitives());
-  if (!planner.SetGrid2D(grid_2d_map_.get())) {
-    state.SkipWithError("Failed to set obstacle data!");
-    return;
-  }
-
-  std::vector<Pose2D> path;
-  for (auto _ : state) {
-    if (planner.PlanPath(start_, goal_, {}, path) != PlannerStatus::kSuccess) {
-      state.SkipWithError("Failed to generate path!");
-    }
-  }
+  planner_ = std::make_unique<DStarLiteSE2Planner>(env_config_,
+                                                   &get_benchmark_primitives());
+  RunBenchmark(state);
 }
 BENCHMARK_REGISTER_F(BenchmarkSE2Planner, DStarLite)
     ->Unit(::benchmark::kMillisecond)
