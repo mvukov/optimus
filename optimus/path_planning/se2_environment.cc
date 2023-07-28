@@ -173,7 +173,7 @@ void SE2Environment::GetPredecessors(int pivot,
   std::fill(predecessors.begin(), predecessors.end(), kInvalidIndex);
   int offset = 0;
   for (const auto& predecessor_state :
-       action_set_->angles_to_predecessors.at(angle_index)) {
+       action_set_->predecessors.at(angle_index)) {
     const auto candidate_x = xy_coords.x + predecessor_state.x_idx;
     const auto candidate_y = xy_coords.y + predecessor_state.y_idx;
     if (candidate_x < 0 || candidate_x >= grid_width || candidate_y < 0 ||

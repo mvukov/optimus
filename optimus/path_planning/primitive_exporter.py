@@ -90,9 +90,9 @@ static const ActionSet2D g_{action_set_name} = {{
   {{
 {primitives}
   }},
-  // Angles -> predecessors
+  // Per-angle-index predecessors
   {{
-{angles_to_predecessors}
+{predecessors}
   }}
 }};
 
@@ -165,15 +165,15 @@ def export_motion_primitives(angles: numpy.ndarray,
       visited_start_angle_indices.append(start_angle_idx)
       current_start_angle_idx = start_angle_idx
 
-  angles_to_predecessors = []
+  predecessors = []
   for angle_idx in range(num_angles):
-    predecessors = [
+    current_predecessors = [
         f'{{{-p.end_x_idx}, {-p.end_y_idx}, {p.start_angle_idx}}}'
         for p in motion_primitives
         if p.end_angle_idx == angle_idx
     ]
-    predecessors_str = ', '.join(predecessors)
-    angles_to_predecessors.append(f'{{{angle_idx}, {{{predecessors_str}}}}}')
+    current_predecessors_str = ', '.join(current_predecessors)
+    predecessors.append(f'{{{current_predecessors_str}}}')
 
   header_guard = file_name.upper()
   header_guard = ''.join([c if c.isalnum() else '_' for c in header_guard])
@@ -185,8 +185,8 @@ def export_motion_primitives(angles: numpy.ndarray,
       angles=export(angles),
       primitive_group_start_indices=export(
           numpy.asarray(primitive_group_start_indices)),
-      angles_to_predecessors=',\n'.join(angles_to_predecessors),
-      primitives=',\n'.join(exported_primitives))
+      primitives=',\n'.join(exported_primitives),
+      predecessors=',\n'.join(predecessors))
   with open(file_name, 'w', encoding='utf-8') as stream:
     stream.write(output_content)
 
