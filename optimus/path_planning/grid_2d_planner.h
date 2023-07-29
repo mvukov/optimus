@@ -56,10 +56,9 @@ class Grid2DPlanner final : public Grid2DPlannerBase {
   explicit Grid2DPlanner(const Grid2DEnvironment::Config& config)
       : Grid2DPlannerBase(config), algorithm_(&env_) {}
 
-  [[nodiscard]] PlannerStatus PlanPath(const Position& start,
-                                       const Position& goal,
-                                       const UserCallback& user_callback,
-                                       std::vector<Position>& path) final;
+  PlannerStatus PlanPath(const Position& start, const Position& goal,
+                         const UserCallback& user_callback,
+                         std::vector<Position>& path) final;
 
   std::optional<float> GetPathCost() const final;
 

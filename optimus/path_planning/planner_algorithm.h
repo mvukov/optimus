@@ -20,7 +20,7 @@
 
 namespace optimus {
 
-enum class PlannerStatus {
+enum class [[nodiscard]] PlannerStatus {
   kUnknown,
   kSuccess,
   kInfeasibleProblem,
@@ -43,20 +43,18 @@ class PlannerAlgorithm {
  public:
   explicit PlannerAlgorithm(Environment* env) : env_(env) {}
 
-  [[nodiscard]] PlannerStatus PlanPath(int start, int goal,
-                                       const UserCallback& user_callback,
-                                       std::vector<int>& path);
+  PlannerStatus PlanPath(int start, int goal, const UserCallback& user_callback,
+                         std::vector<int>& path);
 
-  [[nodiscard]] PlannerStatus ReplanPath(int start,
-                                         const std::vector<int>& changed_states,
-                                         const UserCallback& user_callback,
-                                         std::vector<int>& path);
+  PlannerStatus ReplanPath(int start, const std::vector<int>& changed_states,
+                           const UserCallback& user_callback,
+                           std::vector<int>& path);
 
  protected:
   Environment* env_;
 
  private:
-  [[nodiscard]] PlannerStatus Validate(int start, int* goal) const;
+  PlannerStatus Validate(int start, int* goal) const;
 };
 
 template <class D, class E>

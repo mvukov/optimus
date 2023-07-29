@@ -38,9 +38,9 @@ class SE2PlannerBase {
 
   [[nodiscard]] bool SetGrid2D(const Grid2DMap* grid_2d);
 
-  [[nodiscard]] virtual PlannerStatus PlanPath(
-      const Pose2D& start, const Pose2D& goal,
-      const UserCallback& user_callback, std::vector<Pose2D>& path) = 0;
+  virtual PlannerStatus PlanPath(const Pose2D& start, const Pose2D& goal,
+                                 const UserCallback& user_callback,
+                                 std::vector<Pose2D>& path) = 0;
 
   virtual std::optional<float> GetPathCost() const = 0;
 
@@ -61,9 +61,9 @@ class SE2Planner final : public SE2PlannerBase {
                       const ActionSet2D* action_set)
       : SE2PlannerBase(config, action_set), algorithm_(&env_) {}
 
-  [[nodiscard]] PlannerStatus PlanPath(const Pose2D& start, const Pose2D& goal,
-                                       const UserCallback& user_callback,
-                                       std::vector<Pose2D>& path) final;
+  PlannerStatus PlanPath(const Pose2D& start, const Pose2D& goal,
+                         const UserCallback& user_callback,
+                         std::vector<Pose2D>& path) final;
 
   std::optional<float> GetPathCost() const final;
 
