@@ -13,6 +13,7 @@
 // limitations under the License.
 #ifndef OPTIMUS_PATH_PLANNING_DSTAR_LITE_GRID_2D_PLANNER_H_
 #define OPTIMUS_PATH_PLANNING_DSTAR_LITE_GRID_2D_PLANNER_H_
+#include <vector>
 
 #include "optimus/path_planning/dstar_lite_planner.h"
 #include "optimus/path_planning/grid_2d_environment.h"
@@ -29,6 +30,29 @@ std::optional<float> DStarLiteGrid2DPlanner::GetPathCost() const {
     return std::nullopt;
   }
   return algorithm_.g_values().at(*start_index_);
+}
+
+template <>
+PlannerStatus DStarLiteGrid2DPlanner::ReplanPath(
+    const Position& start, const std::vector<Position>& changed_states,
+    const UserCallback& user_callback, std::vector<Position>& path) {
+  start_index_.reset();
+  const auto start_index = GetStateIndex(start);
+  std::vector<int> changed_state_indices;
+  changed_state_indices.reserve(changed_states.size());
+  std::transform(
+      changed_states.begin(), changed_states.end(),
+      std::back_inserter(changed_state_indices),
+      [this](const auto& position) { return GetStateIndex(position); });
+  std::vector<int> path_indices;  // TODO(mvukov) Make this a member variable?
+  if (auto status = algorithm_.ReplanPath(start_index, changed_state_indices,
+                                          user_callback, path_indices);
+      status != PlannerStatus::kSuccess) {
+    return status;
+  }
+  ReconstructPath(path_indices, path);
+  start_index_ = start_index;
+  return PlannerStatus::kSuccess;
 }
 
 }  // namespace optimus

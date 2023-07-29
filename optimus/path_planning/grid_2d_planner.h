@@ -34,9 +34,14 @@ class Grid2DPlannerBase {
 
   [[nodiscard]] bool SetGrid2D(const Grid2DMap* grid_2d);
 
-  [[nodiscard]] virtual PlannerStatus PlanPath(
-      const Position& start, const Position& goal,
-      const UserCallback& user_callback, std::vector<Position>& path) = 0;
+  virtual PlannerStatus PlanPath(const Position& start, const Position& goal,
+                                 const UserCallback& user_callback,
+                                 std::vector<Position>& path) = 0;
+
+  virtual PlannerStatus ReplanPath(const Position& start,
+                                   const std::vector<Position>& changed_states,
+                                   const UserCallback& user_callback,
+                                   std::vector<Position>& path) = 0;
 
   virtual std::optional<float> GetPathCost() const = 0;
 
@@ -59,6 +64,11 @@ class Grid2DPlanner final : public Grid2DPlannerBase {
   PlannerStatus PlanPath(const Position& start, const Position& goal,
                          const UserCallback& user_callback,
                          std::vector<Position>& path) final;
+
+  PlannerStatus ReplanPath(const Position& start,
+                           const std::vector<Position>& changed_states,
+                           const UserCallback& user_callback,
+                           std::vector<Position>& path) final;
 
   std::optional<float> GetPathCost() const final;
 
