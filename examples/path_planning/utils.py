@@ -20,4 +20,4 @@ def load_obstacle_data(resize_factor: int = 2):
   img = img.convert(mode='L')
   img = PIL.ImageChops.invert(img)
   img = img.resize((img.width * resize_factor, img.height * resize_factor))
-  return numpy.asarray(img)
+  return numpy.array(img)  # Make a copy such that the return value  is mutable.

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include <chrono>
+#include <iostream>
 
 #include "pybind11/eigen.h"
 #include "pybind11/pybind11.h"
@@ -30,6 +31,9 @@ namespace optimus {
 
 // This is an auto-generated function.
 const ActionSet2D& get_example_primitives();
+
+using PyGrid2D =
+    py::array_t<Grid2DScalar, py::array::c_style | py::array::forcecast>;
 
 // Implements an example SE2 (lattice) planner.
 // Look at the build file to learn how to set up code-generation of motion
@@ -96,15 +100,22 @@ class PyGrid2DPlanner {
   explicit PyGrid2DPlanner(const Grid2DEnvironment::Config& config)
       : planner_(config) {}
 
-  std::vector<Position> PyPlanPath(const Grid2D& grid_2d, const Position& start,
-                                   const Position& goal) {
-    auto grid_2d_map = std::make_unique<Grid2DMap>(
-        grid_2d.data(), grid_2d.rows(), grid_2d.cols());
-    if (!planner_.SetGrid2D(grid_2d_map.get())) {
-      throw std::runtime_error("Failed to set obstacle data!");
+  void SetGrid2D(PyGrid2D grid_2d) {
+    if (grid_2d.ndim() != 2 || grid_2d.shape(0) == 0 || grid_2d.shape(1) == 0) {
+      throw std::runtime_error(
+          "The number of dimensions must be 2 and each dimension must be > 0!");
     }
-    std::vector<Position> path;
+    grid_2d_ = grid_2d;
+    grid_2d_map_ = std::make_unique<Grid2DMap>(
+        grid_2d_.data(0, 0), grid_2d_.shape(0), grid_2d_.shape(1));
+    if (!planner_.SetGrid2D(grid_2d_map_.get())) {
+      throw std::runtime_error("Failed to set grid!");
+    }
+  }
 
+  std::vector<Position> PyPlanPath(const Position& start,
+                                   const Position& goal) {
+    std::vector<Position> path;
     planning_time_ = 0;
     num_expansions_ = 0;
     auto callback = [this](UserCallbackEvent event) {
@@ -131,6 +142,8 @@ class PyGrid2DPlanner {
 
  private:
   Planner planner_;
+  py::array_t<Grid2DScalar> grid_2d_;
+  std::unique_ptr<Grid2DMap> grid_2d_map_;
   double planning_time_ = 0;
   int num_expansions_ = 0;
 };
@@ -189,6 +202,7 @@ PYBIND11_MODULE(py_path_planning, m) {
   py::class_<PyAStarGrid2DPlanner>(m, "AStarGrid2DPlanner")
       .def(py::init<const Grid2DEnvironment::Config&>(), py::arg("config"))
       .def("plan_path", &PyAStarGrid2DPlanner::PyPlanPath)
+      .def("set_grid_2d", &PyAStarGrid2DPlanner::SetGrid2D)
       .def_property_readonly("planning_time",
                              &PyAStarGrid2DPlanner::planning_time)
       .def_property_readonly("num_expansions",
@@ -198,6 +212,7 @@ PYBIND11_MODULE(py_path_planning, m) {
   py::class_<PyDStarLiteGrid2DPlanner>(m, "DStarLiteGrid2DPlanner")
       .def(py::init<const Grid2DEnvironment::Config&>(), py::arg("config"))
       .def("plan_path", &PyDStarLiteGrid2DPlanner::PyPlanPath)
+      .def("set_grid_2d", &PyDStarLiteGrid2DPlanner::SetGrid2D)
       .def_property_readonly("planning_time",
                              &PyDStarLiteGrid2DPlanner::planning_time)
       .def_property_readonly("num_expansions",
