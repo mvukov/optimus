@@ -29,7 +29,12 @@ enum class PlannerStatus {
   kNotImplemented,
 };
 
-using UserCallback = std::function<bool(void)>;
+enum class UserCallbackEvent {
+  kSearch,
+  kReconstruction,
+};
+
+using UserCallback = std::function<bool(UserCallbackEvent)>;
 
 std::string ToString(PlannerStatus status);
 

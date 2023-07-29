@@ -57,8 +57,10 @@ class ExampleSE2Planner {
 
     planning_time_ = 0;
     num_expansions_ = 0;
-    auto callback = [this]() {
-      ++num_expansions_;
+    auto callback = [this](UserCallbackEvent event) {
+      if (event == UserCallbackEvent::kSearch) {
+        ++num_expansions_;
+      }
       return true;
     };
     const auto start_timestamp = std::chrono::steady_clock::now();
@@ -70,7 +72,6 @@ class ExampleSE2Planner {
     planning_time_ = std::chrono::duration<double>(
                          std::chrono::steady_clock::now() - start_timestamp)
                          .count();
-    --num_expansions_;  // This is the exit in fact.
     return path;
   }
 
@@ -106,8 +107,10 @@ class PyGrid2DPlanner {
 
     planning_time_ = 0;
     num_expansions_ = 0;
-    auto callback = [this]() {
-      ++num_expansions_;
+    auto callback = [this](UserCallbackEvent event) {
+      if (event == UserCallbackEvent::kSearch) {
+        ++num_expansions_;
+      }
       return true;
     };
     const auto start_timestamp = std::chrono::steady_clock::now();
@@ -119,7 +122,6 @@ class PyGrid2DPlanner {
     planning_time_ = std::chrono::duration<double>(
                          std::chrono::steady_clock::now() - start_timestamp)
                          .count();
-    --num_expansions_;
     return path;
   }
 

@@ -172,7 +172,7 @@ class TestDStarLitePlanner : public Test {
 
   PlannerEnvironmentMock env_;
   std::unique_ptr<Planner> planner_;
-  ::testing::MockFunction<bool()> user_callback_;
+  ::testing::MockFunction<bool(UserCallbackEvent)> user_callback_;
   std::vector<int> path_;
 };
 

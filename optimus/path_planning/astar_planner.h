@@ -105,7 +105,7 @@ PlannerStatus AStarPlanner<E>::Expand(int goal,
       return PlannerStatus::kSuccess;
     }
 
-    if (user_callback && !user_callback()) {
+    if (user_callback && !user_callback(UserCallbackEvent::kSearch)) {
       return PlannerStatus::kUserAbort;
     }
 
@@ -151,7 +151,7 @@ bool AStarPlanner<E>::ReconstructShortestPath(int goal,
   auto path_length = 1;
   auto current = goal;
   while (true) {
-    if (user_callback && !user_callback()) {
+    if (user_callback && !user_callback(UserCallbackEvent::kReconstruction)) {
       return false;
     }
     auto parent = parent_indices_.at(current);

@@ -144,7 +144,7 @@ PlannerStatus DStarLitePlanner<E>::CalculateShortestPath(
     }
     open_states_[pivot_index] = false;
 
-    if (user_callback && !user_callback()) {
+    if (user_callback && !user_callback(UserCallbackEvent::kSearch)) {
       return PlannerStatus::kUserAbort;
     }
 
@@ -230,7 +230,7 @@ PlannerStatus DStarLitePlanner<E>::ReconstructShortestPath(
   path.push_back(start_);
   auto pivot = start_;
   while (pivot != goal_) {
-    if (user_callback && !user_callback()) {
+    if (user_callback && !user_callback(UserCallbackEvent::kReconstruction)) {
       return PlannerStatus::kUserAbort;
     }
     auto next_state = best_next_states_[pivot];
