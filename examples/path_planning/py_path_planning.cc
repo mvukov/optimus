@@ -35,11 +35,33 @@ const ActionSet2D& get_example_primitives();
 using PyGrid2D =
     py::array_t<Grid2DScalar, py::array::c_style | py::array::forcecast>;
 
+template <class Derived>
+class PyPlanner {
+ public:
+  void SetGrid2D(PyGrid2D grid_2d) {
+    if (grid_2d.ndim() != 2 || grid_2d.shape(0) == 0 || grid_2d.shape(1) == 0) {
+      throw std::runtime_error(
+          "The number of dimensions must be 2 and each dimension must be > 0!");
+    }
+    grid_2d_ = grid_2d;
+    grid_2d_map_ = std::make_unique<Grid2DMap>(
+        grid_2d_.data(0, 0), grid_2d_.shape(0), grid_2d_.shape(1));
+    if (!static_cast<Derived*>(this)->mutable_planner()->SetGrid2D(
+            grid_2d_map_.get())) {
+      throw std::runtime_error("Failed to set grid!");
+    }
+  }
+
+ protected:
+  py::array_t<Grid2DScalar> grid_2d_;
+  std::unique_ptr<Grid2DMap> grid_2d_map_;
+};
+
 // Implements an example SE2 (lattice) planner.
 // Look at the build file to learn how to set up code-generation of motion
 // primitives.
 template <class Planner>
-class ExampleSE2Planner {
+class ExampleSE2Planner : public PyPlanner<ExampleSE2Planner<Planner>> {
  public:
   using Pose2D = SE2PlannerBase::Pose2D;
 
@@ -50,15 +72,8 @@ class ExampleSE2Planner {
 
   // This implementation is Python specific where error handling is handled with
   // exceptions -- in C++ its handled with status codes.
-  std::vector<Pose2D> PyPlanPath(const Grid2D& grid_2d, const Pose2D& start,
-                                 const Pose2D& goal) {
-    auto grid_2d_map = std::make_unique<Grid2DMap>(
-        grid_2d.data(), grid_2d.rows(), grid_2d.cols());
-    if (!planner_.SetGrid2D(grid_2d_map.get())) {
-      throw std::runtime_error("Failed to set obstacle data!");
-    }
+  std::vector<Pose2D> PyPlanPath(const Pose2D& start, const Pose2D& goal) {
     std::vector<Pose2D> path;
-
     planning_time_ = 0;
     num_expansions_ = 0;
     auto callback = [this](UserCallbackEvent event) {
@@ -83,6 +98,8 @@ class ExampleSE2Planner {
   auto num_expansions() const { return num_expansions_; }
   auto path_cost() const { return planner_.GetPathCost(); }
 
+  auto* mutable_planner() { return &planner_; }
+
  private:
   Planner planner_;
   double planning_time_ = 0;
@@ -93,25 +110,12 @@ using ExampleAStarSE2Planner = ExampleSE2Planner<AStarSE2Planner>;
 using ExampleDStarLiteSE2Planner = ExampleSE2Planner<DStarLiteSE2Planner>;
 
 template <class Planner>
-class PyGrid2DPlanner {
+class PyGrid2DPlanner : public PyPlanner<PyGrid2DPlanner<Planner>> {
  public:
   using Position = typename Planner::Position;
 
   explicit PyGrid2DPlanner(const Grid2DEnvironment::Config& config)
       : planner_(config) {}
-
-  void SetGrid2D(PyGrid2D grid_2d) {
-    if (grid_2d.ndim() != 2 || grid_2d.shape(0) == 0 || grid_2d.shape(1) == 0) {
-      throw std::runtime_error(
-          "The number of dimensions must be 2 and each dimension must be > 0!");
-    }
-    grid_2d_ = grid_2d;
-    grid_2d_map_ = std::make_unique<Grid2DMap>(
-        grid_2d_.data(0, 0), grid_2d_.shape(0), grid_2d_.shape(1));
-    if (!planner_.SetGrid2D(grid_2d_map_.get())) {
-      throw std::runtime_error("Failed to set grid!");
-    }
-  }
 
   std::vector<Position> PyPlanPath(const Position& start,
                                    const Position& goal) {
@@ -140,10 +144,10 @@ class PyGrid2DPlanner {
   auto num_expansions() const { return num_expansions_; }
   auto path_cost() const { return planner_.GetPathCost(); }
 
+  auto* mutable_planner() { return &planner_; }
+
  private:
   Planner planner_;
-  py::array_t<Grid2DScalar> grid_2d_;
-  std::unique_ptr<Grid2DMap> grid_2d_map_;
   double planning_time_ = 0;
   int num_expansions_ = 0;
 };
@@ -168,6 +172,7 @@ PYBIND11_MODULE(py_path_planning, m) {
   py::class_<ExampleAStarSE2Planner>(m, "ExampleAStarSE2Planner")
       .def(py::init<const SE2Environment::Config&>(), py::arg("config"))
       .def("plan_path", &ExampleAStarSE2Planner::PyPlanPath)
+      .def("set_grid_2d", &ExampleAStarSE2Planner::SetGrid2D)
       .def_property_readonly("planning_time",
                              &ExampleAStarSE2Planner::planning_time)
       .def_property_readonly("num_expansions",
@@ -177,6 +182,7 @@ PYBIND11_MODULE(py_path_planning, m) {
   py::class_<ExampleDStarLiteSE2Planner>(m, "ExampleDStarLiteSE2Planner")
       .def(py::init<const SE2Environment::Config&>(), py::arg("config"))
       .def("plan_path", &ExampleDStarLiteSE2Planner::PyPlanPath)
+      .def("set_grid_2d", &ExampleDStarLiteSE2Planner::SetGrid2D)
       .def_property_readonly("planning_time",
                              &ExampleDStarLiteSE2Planner::planning_time)
       .def_property_readonly("num_expansions",
