@@ -2,7 +2,7 @@
 """
 
 load("@optimus_pip_deps//:requirements.bzl", "requirement")
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 load("//repositories:cc_defs.bzl", "COPTS")
 load("//third_party/pytest:defs.bzl", "py_pytest_test")
@@ -34,11 +34,11 @@ cc_library(
     name = "path_planning",
     srcs = [
         "action_set_2d.cc",
-        "astar_se2_planner.cc",
         "grid_2d_planner.cc",
         "grid_utils.cc",
         "planner_algorithm.cc",
         "se2_environment.cc",
+        "se2_planner.cc",
     ],
     hdrs = [
         "action_set_2d.h",
@@ -48,12 +48,15 @@ cc_library(
         "common_utils.h",
         "dstar_lite_grid_2d_planner.h",
         "dstar_lite_planner.h",
+        "dstar_lite_se2_planner.h",
+        "grid_2d.h",
         "grid_2d_environment.h",
         "grid_2d_planner.h",
         "grid_utils.h",
         "planner_algorithm.h",
         "priority_queue_utils.h",
         "se2_environment.h",
+        "se2_planner.h",
     ],
     copts = COPTS,
     visibility = ["//visibility:public"],
@@ -96,5 +99,55 @@ py_pytest_test(
     ],
     deps = [
         "//optimus/path_planning:primitive_generator",
+    ],
+)
+
+py_binary(
+    name = "generate_benchmark_data",
+    srcs = ["generate_benchmark_data.py"],
+    data = ["@test_data_csail//file"],
+    deps = [
+        "@rules_python//python/runfiles",
+        requirement("pillow"),
+    ],
+)
+
+genrule(
+    name = "benchmark_data",
+    outs = ["scsail.png"],
+    cmd = " ".join([
+        "$(location :generate_benchmark_data)",
+        "--output_dir=`dirname $@`",
+    ]),
+    tools = [":generate_benchmark_data"],
+)
+
+genrule(
+    name = "benchmark_primitives",
+    outs = ["benchmark_primitives.cc"],
+    cmd = " ".join([
+        "$(location :primitive_exporter)",
+        "--grid_connectivity=32",
+        "--max_angle_idx_diff=2",
+        "--min_radius_grid=4.95",
+        "--output=$@",
+    ]),
+    tools = [":primitive_exporter"],
+)
+
+# Profiling:
+# bazel run //optimus/path_planning:benchmark_planners --config=profile --run_under="perf record --call-graph dwarf -o `pwd`/perf.data -F 10000" -- --benchmark_filter=BenchmarkGrid2dPlanner/AStar/*
+cc_binary(
+    name = "benchmark_planners",
+    srcs = [
+        "benchmark_planners.cc",
+        ":benchmark_primitives",
+    ],
+    copts = COPTS,
+    data = [":benchmark_data"],
+    deps = [
+        ":path_planning",
+        "@com_github_google_benchmark//:benchmark",
+        "@stb//:stb_image",
     ],
 )

@@ -144,7 +144,7 @@ PlannerStatus DStarLitePlanner<E>::CalculateShortestPath(
     }
     open_states_[pivot_index] = false;
 
-    if (user_callback && !user_callback()) {
+    if (user_callback && !user_callback(UserCallbackEvent::kSearch)) {
       return PlannerStatus::kUserAbort;
     }
 
@@ -190,7 +190,8 @@ void DStarLitePlanner<E>::UpdateVertex(int pivot) {
 
   // TODO(mvukov) we need GetSuccessorsAndCosts here.
   this->env_->GetNeighborsAndCosts(pivot, neighbors_, pivot_to_neighbor_costs_);
-  auto rhs = kInfCost;
+  auto min_rhs = kInfCost;
+  auto min_rhs_successor = kInvalidIndex;
   const auto max_num_neighbors = this->env_->GetMaxNumNeighbors();
   for (int el = 0; el < max_num_neighbors; ++el) {
     const auto successor = neighbors_[el];
@@ -198,12 +199,13 @@ void DStarLitePlanner<E>::UpdateVertex(int pivot) {
       continue;
     }
     auto successor_rhs = g_values_[successor] + pivot_to_neighbor_costs_[el];
-    if (rhs > successor_rhs) {
-      rhs = successor_rhs;
-      best_next_states_[pivot] = successor;
+    if (min_rhs > successor_rhs) {
+      min_rhs = successor_rhs;
+      min_rhs_successor = successor;
     }
   }
-  rhs_values_[pivot] = rhs;
+  rhs_values_[pivot] = min_rhs;
+  best_next_states_[pivot] = min_rhs_successor;
 
   if (!AreEqual(g_values_[pivot], rhs_values_[pivot])) {
     open_queue_.emplace(pivot, CalculateKey(pivot));
@@ -228,7 +230,7 @@ PlannerStatus DStarLitePlanner<E>::ReconstructShortestPath(
   path.push_back(start_);
   auto pivot = start_;
   while (pivot != goal_) {
-    if (user_callback && !user_callback()) {
+    if (user_callback && !user_callback(UserCallbackEvent::kReconstruction)) {
       return PlannerStatus::kUserAbort;
     }
     auto next_state = best_next_states_[pivot];

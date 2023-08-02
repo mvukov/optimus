@@ -54,8 +54,10 @@ TEST_F(TestSE2EnvironmentConfig,
 class TestSE2Environment : public Test {
  public:
   void CreateValidObstacles() {
-    obstacles_.resize(6, 4);
-    obstacles_.setConstant(0);
+    grid_2d_.resize(6, 4);
+    grid_2d_.setConstant(0);
+    grid_2d_map_ = std::make_unique<Grid2DMap>(grid_2d_.data(), grid_2d_.rows(),
+                                               grid_2d_.cols());
   }
 
   // TODO(mvukov) Factor out to a common test header.
@@ -92,13 +94,14 @@ class TestSE2Environment : public Test {
     CreateValidObstacles();
     CreateValidActionSet();
     env_ = std::make_unique<SE2Environment>(env_config_, &action_set_);
-    env_->SetObstacleData(&obstacles_);
+    env_->SetGrid2D(grid_2d_map_.get());
   }
 
   SE2Environment::Config env_config_;
   ActionSet2D action_set_;
   std::unique_ptr<SE2Environment> env_;
-  SE2Environment::ObstacleData obstacles_;
+  Grid2D grid_2d_;
+  std::unique_ptr<Grid2DMap> grid_2d_map_;
 };
 
 TEST_F(TestSE2Environment,
@@ -168,7 +171,7 @@ TEST_F(TestSimpleSE2Enviroment, WhenValidState_EnsureIsStateValidPasses) {
 }
 
 TEST_F(TestSimpleSE2Enviroment, WhenInValidState_EnsureIsStateValidFails) {
-  obstacles_(0, 3) = 5;
+  grid_2d_(0, 3) = 5;
   EXPECT_FALSE(env_->IsStateValid(3 << 3));
 }
 

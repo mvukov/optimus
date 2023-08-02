@@ -21,6 +21,12 @@ build --noexperimental_check_output_files
 # Don't bother building targets which aren't dependencies of the tests.
 test --build_tests_only
 
+build:opt -c opt
+build:opt --copt=-O3
+
+build:profile --config=opt
+build:profile --copt=-g
+
 # Load any settings specific to the current user.
 # user.bazelrc should appear in .gitignore so that settings are not shared with
 # team members. This needs to be last statement in this config,

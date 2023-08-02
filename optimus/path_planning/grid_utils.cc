@@ -34,29 +34,22 @@ void Get8NeighborsOn2dGrid(int pivot, int grid_width, int grid_height,
   const int x = pivot % grid_width;
   const int y = pivot / grid_width;
 
-  std::fill(neighbors.begin(), neighbors.end(), kInvalidIndex);
-  if (neighbors.size() != kMaxNumNeighbors8) {
-    return;
-  }
   for (std::size_t el = 0; el < kMaxNumNeighbors8; ++el) {
     const auto& local_neighbor = kNeighbors[el];
     const auto neighbor_x = x + local_neighbor.first;
     const auto neighbor_y = y + local_neighbor.second;
     if (neighbor_x < 0 || neighbor_x >= grid_width || neighbor_y < 0 ||
         neighbor_y >= grid_height) {
-      continue;
+      neighbors[el] = kInvalidIndex;
+    } else {
+      neighbors[el] = neighbor_y * grid_width + neighbor_x;
     }
-    neighbors[el] = neighbor_y * grid_width + neighbor_x;
   }
 }
 
 void Set8PivotToNeighborCosts(std::vector<float>& costs) {
   static const std::array<float, kMaxNumNeighbors8> kPivotToNeighborCosts = {
       M_SQRT2, 1., M_SQRT2, 1., 1., M_SQRT2, 1., M_SQRT2};
-  if (costs.size() != kMaxNumNeighbors8) {
-    std::fill(costs.begin(), costs.end(), kInfCost);
-    return;
-  }
   std::copy(kPivotToNeighborCosts.begin(), kPivotToNeighborCosts.end(),
             costs.begin());
 }

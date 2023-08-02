@@ -1,18 +1,19 @@
 load("@optimus_pip_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 load("//repositories:cc_defs.bzl", "COPTS")
-load("//repositories:generator.bzl", "generator")
 load("//repositories:python_extension.bzl", "pybind11_extension")
 
-generator(
+genrule(
     name = "example_primitives",
-    args = [
+    outs = ["example_primitives.cc"],
+    cmd = " ".join([
+        "$(location //optimus/path_planning:primitive_exporter)",
         "--grid_connectivity=32",
         "--max_angle_idx_diff=2",
         "--min_radius_grid=4.95",
-    ],
-    extension = ".cc",
-    generator = "//optimus/path_planning:primitive_exporter",
+        "--output=$@",
+    ]),
+    tools = ["//optimus/path_planning:primitive_exporter"],
 )
 
 pybind11_extension(
@@ -42,15 +43,14 @@ py_library(
 )
 
 py_binary(
-    name = "run_astar_se2_planner",
-    srcs = ["run_astar_se2_planner.py"],
+    name = "run_se2_planners",
+    srcs = ["run_se2_planners.py"],
     deps = [
         ":py_path_planning",
         ":utils",
         requirement("matplotlib"),
         requirement("numpy"),
         requirement("PySide6"),
-        requirement("scikit-fmm"),
     ],
 )
 

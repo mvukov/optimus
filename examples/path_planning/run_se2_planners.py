@@ -20,6 +20,16 @@ from examples.path_planning import utils
 
 matplotlib.use('QtAgg')
 
+Pose2D = py_path_planning.Pose2D
+
+
+def plot_arrow(ax: matplotlib.axes.Axes, t: Pose2D, arrow_scale: float = 0.5):
+  ax.arrow(t.x,
+           t.y,
+           arrow_scale * numpy.cos(t.theta),
+           arrow_scale * numpy.sin(t.theta),
+           width=0.05)
+
 
 def plot_results(path: numpy.ndarray, ax: matplotlib.axes.Axes,
                  img: numpy.ndarray, color_map: str, title: str):
@@ -30,9 +40,12 @@ def plot_results(path: numpy.ndarray, ax: matplotlib.axes.Axes,
             extent=[0, num_cols, 0, num_rows])
 
   if path:
-    path_x = [p[0] for p in path]
-    path_y = [p[1] for p in path]
+    path_x = [p.x for p in path]
+    path_y = [p.y for p in path]
     ax.plot(path_x, path_y)
+
+    plot_arrow(ax, path[0])
+    plot_arrow(ax, path[-1])
 
   ax.grid()
   ax.set_xlabel('x')
@@ -43,8 +56,7 @@ def plot_results(path: numpy.ndarray, ax: matplotlib.axes.Axes,
 def run_planner(planner, obstacle_data, start, goal):
   path = []
   try:
-    planner.set_grid_2d(obstacle_data)
-    path = planner.plan_path(start, goal)
+    path = planner.plan_path(obstacle_data.astype(numpy.uint8), start, goal)
     print(f'Planning time: {planner.planning_time:.3f} seconds')
     print(f'Number of expansions: {planner.num_expansions}')
     print(f'Path cost: {planner.path_cost:.3f}')
@@ -57,17 +69,17 @@ def run_planner(planner, obstacle_data, start, goal):
 def main():
   obstacle_data = utils.load_obstacle_data()
 
-  start = [127, 28]
-  goal = [146, 436]
-
-  env_config = py_path_planning.Grid2DEnvironment.Config()
+  env_config = py_path_planning.SE2Environment.Config()
   env_config.valid_state_threshold = 15
 
-  astar_planner = py_path_planning.AStarGrid2DPlanner(env_config)
+  start = Pose2D(127, 28, numpy.pi / 2)
+  goal = Pose2D(146, 436, numpy.pi / 2)
+
+  astar_planner = py_path_planning.ExampleAStarSE2Planner(env_config)
   print('Running A*')
   astar_path = run_planner(astar_planner, obstacle_data, start, goal)
 
-  dstar_lite_planner = py_path_planning.DStarLiteGrid2DPlanner(env_config)
+  dstar_lite_planner = py_path_planning.ExampleDStarLiteSE2Planner(env_config)
   print('Running D*Lite')
   dstar_lite_path = run_planner(dstar_lite_planner, obstacle_data, start, goal)
 
@@ -78,6 +90,7 @@ def main():
                obstacle_data,
                color_map='Greys',
                title='D*Lite')
+
   pyplot.show()
 
 

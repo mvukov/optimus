@@ -1,4 +1,4 @@
-// Copyright 2022 Milan Vukov. All rights reserved.
+// Copyright 2023 Milan Vukov. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include "optimus/path_planning/astar_se2_planner.h"
+#include "optimus/path_planning/se2_planner.h"
 
 #include <vector>
 
@@ -24,41 +24,22 @@ constexpr int kMinPathLength = 2;
 
 }  // namespace
 
-PlannerStatus AStarSE2Planner::PlanPath(const Pose2D& start, const Pose2D& goal,
-                                        const UserCallback& user_callback,
-                                        std::vector<Pose2D>& path) {
-  if (!env_.Validate()) {
-    return PlannerStatus::kInternalError;
-  }
-
-  const auto start_index = GetStateIndex(start);
-  const auto goal_index = GetStateIndex(goal);
-  if (start_index == goal_index) {
-    path = {start, goal};
-    return PlannerStatus::kSuccess;
-  }
-
-  std::vector<int> path_indices;
-  if (auto status = algorithm_.PlanPath(start_index, goal_index, user_callback,
-                                        path_indices);
-      status != PlannerStatus::kSuccess) {
-    return status;
-  }
-  return ReconstructPath(path_indices, path);
+bool SE2PlannerBase::SetGrid2D(const Grid2DMap* grid_2d) {
+  return env_.SetGrid2D(grid_2d);
 }
 
-int AStarSE2Planner::GetStateIndex(const Pose2D& t) const {
+int SE2PlannerBase::GetStateIndex(const Pose2D& t) const {
   const int x = std::floor(t.x);
   const int y = std::floor(t.y);
   const auto angle_index = env_.action_set().GetAngleIndex(t.theta);
   if (angle_index == kInvalidIndex) {
     return kInvalidIndex;
   }
-  return ((y * env_.obstacle_data().cols() + x) << env_.num_angle_bits()) +
+  return ((y * env_.grid_2d()->cols() + x) << env_.num_angle_bits()) +
          angle_index;
 }
 
-PlannerStatus AStarSE2Planner::ReconstructPath(
+PlannerStatus SE2PlannerBase::ReconstructPath(
     const std::vector<int>& path_indices, std::vector<Pose2D>& path) const {
   if (static_cast<int>(path_indices.size()) < kMinPathLength) {
     return PlannerStatus::kInternalError;

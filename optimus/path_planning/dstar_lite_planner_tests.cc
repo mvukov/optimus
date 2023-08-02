@@ -31,28 +31,30 @@ using ::testing::Test;
 class TestDStarLitePlannerOn2DGrid : public Test {
  public:
   using Planner = DStarLitePlanner<Grid2DEnvironment>;
-  using Obstacles = Grid2DEnvironment::ObstacleData;
 
   TestDStarLitePlannerOn2DGrid() {
-    obstacles_ = Obstacles(5, 3);
-    obstacles_.setConstant(0);
+    grid_2d_ = Grid2D(5, 3);
+    grid_2d_.setConstant(0);
+    grid_2d_map_ = std::make_unique<Grid2DMap>(grid_2d_.data(), grid_2d_.rows(),
+                                               grid_2d_.cols());
 
     Grid2DEnvironment::Config env_config;
 
     env_config.valid_state_threshold = 1;
     env_ = std::make_unique<Grid2DEnvironment>(env_config);
-    EXPECT_TRUE(env_->SetObstacleData(&obstacles_));
+    EXPECT_TRUE(env_->SetGrid2D(grid_2d_map_.get()));
 
     planner_ = std::make_unique<Planner>(env_.get());
   }
 
   void SetObstacles(const std::vector<int>& indices) {
     for (auto index : indices) {
-      *(obstacles_.data() + index) = 2;
+      *(grid_2d_.data() + index) = 2;
     }
   }
 
-  Obstacles obstacles_;
+  Grid2D grid_2d_;
+  std::unique_ptr<Grid2DMap> grid_2d_map_;
   std::unique_ptr<Grid2DEnvironment> env_;
   std::unique_ptr<Planner> planner_;
   std::vector<int> path_;
@@ -170,7 +172,7 @@ class TestDStarLitePlanner : public Test {
 
   PlannerEnvironmentMock env_;
   std::unique_ptr<Planner> planner_;
-  ::testing::MockFunction<bool()> user_callback_;
+  ::testing::MockFunction<bool(UserCallbackEvent)> user_callback_;
   std::vector<int> path_;
 };
 

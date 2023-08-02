@@ -1,5 +1,11 @@
-bazel-*
+/bazel-*
 __pycache__
 *.json
 .clwb
 user.bazelrc
+*.data
+*.data.old
+
+/compile_commands.json
+/external
+.cache/

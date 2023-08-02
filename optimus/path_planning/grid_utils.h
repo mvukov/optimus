@@ -29,9 +29,11 @@ static inline float GetHypot(int start, int goal, int grid_width) {
   return std::hypot(x_diff, y_diff);
 }
 
+// The size of neighbors must be 8.
 void Get8NeighborsOn2dGrid(int pivot, int grid_width, int grid_height,
                            std::vector<int>& neighbors);
 
+// The size of costs must be 8.
 void Set8PivotToNeighborCosts(std::vector<float>& costs);
 
 }  // namespace optimus

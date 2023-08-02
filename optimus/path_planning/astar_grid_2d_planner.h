@@ -13,6 +13,7 @@
 // limitations under the License.
 #ifndef OPTIMUS_PATH_PLANNING_ASTAR_GRID_2D_PLANNER_H_
 #define OPTIMUS_PATH_PLANNING_ASTAR_GRID_2D_PLANNER_H_
+#include <vector>
 
 #include "optimus/path_planning/astar_planner.h"
 #include "optimus/path_planning/grid_2d_environment.h"
@@ -28,6 +29,14 @@ std::optional<float> AStarGrid2DPlanner::GetPathCost() const {
     return std::nullopt;
   }
   return algorithm_.g_values().at(*goal_index_);
+}
+
+template <>
+PlannerStatus AStarGrid2DPlanner::ReplanPath(const Position&,
+                                             const std::vector<Position>&,
+                                             const UserCallback&,
+                                             std::vector<Position>&) {
+  return PlannerStatus::kNotImplemented;
 }
 
 }  // namespace optimus

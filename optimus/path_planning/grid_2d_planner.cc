@@ -13,20 +13,21 @@
 // limitations under the License.
 #include "optimus/path_planning/grid_2d_planner.h"
 
+#include "optimus/path_planning/grid_2d.h"
+
 namespace optimus {
 
-bool Grid2DPlannerBase::SetObstacleData(
-    const Grid2DEnvironment::ObstacleData* obstacle_data) {
-  return env_.SetObstacleData(obstacle_data);
+bool Grid2DPlannerBase::SetGrid2D(const Grid2DMap* grid_2d) {
+  return env_.SetGrid2D(grid_2d);
 }
 
 int Grid2DPlannerBase::GetStateIndex(const Position& p) const {
-  return p.y() * env_.obstacle_data().cols() + p.x();
+  return p.y() * env_.grid_2d()->cols() + p.x();
 }
 
 void Grid2DPlannerBase::ReconstructPath(const std::vector<int>& path_indices,
                                         std::vector<Position>& path) const {
-  const int grid_width = env_.obstacle_data().cols();
+  const int grid_width = env_.grid_2d()->cols();
   const int path_size = path_indices.size();
   path.resize(path_size);
   for (int el = 0; el < path_size; ++el) {

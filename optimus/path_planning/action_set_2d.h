@@ -44,6 +44,16 @@ struct ActionSet2D {
   // Primitives are grouped and sorted for start angle indices.
   std::vector<MotionPrimitive2D> motion_primitives;
 
+  struct State {
+    int x_idx;
+    int y_idx;
+    int angle_idx;
+  };
+  // Assumes the current x = 0 and y = 0.
+  // The vector of predecessors at position n corresponds to the n-th angle
+  // in the angles array.
+  std::vector<std::vector<State>> predecessors;
+
   [[nodiscard]] bool Validate() const;
   [[nodiscard]] int GetAngleIndex(float angle) const;
 };
