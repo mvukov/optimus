@@ -6,6 +6,10 @@ build --noincompatible_use_platforms_repo_for_constraints
 # Fix the wrong default to generate __init__.py to delimit a Python package.
 build --incompatible_default_to_explicit_init_py
 
+# All code will be compiled with C++17 flag.
+# NOTE: googletest >=v1.13.0 requires min C++14.
+build --cxxopt=-std=c++17
+
 # Ensure that you don't accidentally make non-hermetic actions/tests
 # which depend on remote services. Tag an individual target with
 # tags=["requires-network"] to opt-out of the enforcement.
