@@ -40,7 +40,7 @@ class PyPlanner {
  public:
   void SetGrid2D(PyGrid2D grid_2d) {
     if (grid_2d.ndim() != 2 || grid_2d.shape(0) == 0 || grid_2d.shape(1) == 0) {
-      throw std::runtime_error(
+      throw py::value_error(
           "The number of dimensions must be 2 and each dimension must be > 0!");
     }
     grid_2d_ = grid_2d;
@@ -117,8 +117,7 @@ class PyGrid2DPlanner : public PyPlanner<PyGrid2DPlanner<Planner>> {
   explicit PyGrid2DPlanner(const Grid2DEnvironment::Config& config)
       : planner_(config) {}
 
-  std::vector<Position> PyPlanPath(const Position& start,
-                                   const Position& goal) {
+  std::vector<Position> PlanPath(const Position& start, const Position& goal) {
     std::vector<Position> path;
     planning_time_ = 0;
     num_expansions_ = 0;
@@ -132,6 +131,30 @@ class PyGrid2DPlanner : public PyPlanner<PyGrid2DPlanner<Planner>> {
     if (auto status = planner_.PlanPath(start, goal, callback, path);
         status != PlannerStatus::kSuccess) {
       throw std::runtime_error("Failed to plan a path! Reason: " +
+                               ToString(status));
+    }
+    planning_time_ = std::chrono::duration<double>(
+                         std::chrono::steady_clock::now() - start_timestamp)
+                         .count();
+    return path;
+  }
+
+  std::vector<Position> ReplanPath(
+      const Position& start, const std::vector<Position>& changed_states) {
+    std::vector<Position> path;
+    planning_time_ = 0;
+    num_expansions_ = 0;
+    auto callback = [this](UserCallbackEvent event) {
+      if (event == UserCallbackEvent::kSearch) {
+        ++num_expansions_;
+      }
+      return true;
+    };
+    const auto start_timestamp = std::chrono::steady_clock::now();
+    if (auto status =
+            planner_.ReplanPath(start, changed_states, callback, path);
+        status != PlannerStatus::kSuccess) {
+      throw std::runtime_error("Failed to replan a path! Reason: " +
                                ToString(status));
     }
     planning_time_ = std::chrono::duration<double>(
@@ -207,7 +230,8 @@ PYBIND11_MODULE(py_path_planning, m) {
 
   py::class_<PyAStarGrid2DPlanner>(m, "AStarGrid2DPlanner")
       .def(py::init<const Grid2DEnvironment::Config&>(), py::arg("config"))
-      .def("plan_path", &PyAStarGrid2DPlanner::PyPlanPath)
+      .def("plan_path", &PyAStarGrid2DPlanner::PlanPath)
+      .def("replan_path", &PyAStarGrid2DPlanner::ReplanPath)
       .def("set_grid_2d", &PyAStarGrid2DPlanner::SetGrid2D)
       .def_property_readonly("planning_time",
                              &PyAStarGrid2DPlanner::planning_time)
@@ -217,7 +241,8 @@ PYBIND11_MODULE(py_path_planning, m) {
 
   py::class_<PyDStarLiteGrid2DPlanner>(m, "DStarLiteGrid2DPlanner")
       .def(py::init<const Grid2DEnvironment::Config&>(), py::arg("config"))
-      .def("plan_path", &PyDStarLiteGrid2DPlanner::PyPlanPath)
+      .def("plan_path", &PyDStarLiteGrid2DPlanner::PlanPath)
+      .def("replan_path", &PyDStarLiteGrid2DPlanner::ReplanPath)
       .def("set_grid_2d", &PyDStarLiteGrid2DPlanner::SetGrid2D)
       .def_property_readonly("planning_time",
                              &PyDStarLiteGrid2DPlanner::planning_time)
