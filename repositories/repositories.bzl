@@ -48,9 +48,9 @@ def optimus_repositories():
     maybe(
         http_archive,
         name = "com_google_googletest",
-        sha256 = "b4870bf121ff7795ba20d20bcdd8627b8e088f2d1dab299a031c1034eddc93d5",
-        strip_prefix = "googletest-release-1.11.0",
-        urls = ["https://github.com/google/googletest/archive/refs/tags/release-1.11.0.tar.gz"],
+        sha256 = "ad7fdba11ea011c1d925b3289cf4af2c66a352e18d4c7264392fead75e919363",
+        strip_prefix = "googletest-1.13.0",
+        urls = ["https://github.com/google/googletest/archive/refs/tags/v1.13.0.tar.gz"],
     )
 
     maybe(
