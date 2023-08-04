@@ -22,7 +22,9 @@ bool Grid2DPlannerBase::SetGrid2D(const Grid2DMap* grid_2d) {
 }
 
 int Grid2DPlannerBase::GetStateIndex(const Position& p) const {
-  return p.y() * env_.grid_2d()->cols() + p.x();
+  const int x = std::floor(p.x());
+  const int y = std::floor(p.y());
+  return y * env_.grid_2d()->cols() + x;
 }
 
 void Grid2DPlannerBase::ReconstructPath(const std::vector<int>& path_indices,
@@ -32,7 +34,9 @@ void Grid2DPlannerBase::ReconstructPath(const std::vector<int>& path_indices,
   path.resize(path_size);
   for (int el = 0; el < path_size; ++el) {
     const auto index = path_indices[el];
-    path[el] = {index % grid_width, index / grid_width};
+    constexpr auto kCellOffset = 0.5f;
+    path[el] = {static_cast<float>(index % grid_width) + kCellOffset,
+                static_cast<float>(index / grid_width) + kCellOffset};
   }
 }
 

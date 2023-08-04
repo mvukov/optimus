@@ -25,7 +25,7 @@ namespace optimus {
 
 class Grid2DPlannerBase {
  public:
-  using Position = Eigen::Vector2i;
+  using Position = Eigen::Vector2f;
 
   explicit Grid2DPlannerBase(const Grid2DEnvironment::Config& config)
       : env_(config) {}
