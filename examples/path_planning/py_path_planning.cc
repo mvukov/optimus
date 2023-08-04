@@ -140,7 +140,7 @@ class PyGrid2DPlanner : public PyPlanner<PyGrid2DPlanner<Planner>> {
   }
 
   std::vector<Position> ReplanPath(
-      const Position& start, const std::vector<Position>& changed_states) {
+      const Position& start, const std::vector<Position>& changed_positions) {
     std::vector<Position> path;
     planning_time_ = 0;
     num_expansions_ = 0;
@@ -152,7 +152,7 @@ class PyGrid2DPlanner : public PyPlanner<PyGrid2DPlanner<Planner>> {
     };
     const auto start_timestamp = std::chrono::steady_clock::now();
     if (auto status =
-            planner_.ReplanPath(start, changed_states, callback, path);
+            planner_.ReplanPath(start, changed_positions, callback, path);
         status != PlannerStatus::kSuccess) {
       throw std::runtime_error("Failed to replan a path! Reason: " +
                                ToString(status));

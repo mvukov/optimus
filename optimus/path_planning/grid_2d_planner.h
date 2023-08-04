@@ -38,10 +38,9 @@ class Grid2DPlannerBase {
                                  const UserCallback& user_callback,
                                  std::vector<Position>& path) = 0;
 
-  virtual PlannerStatus ReplanPath(const Position& start,
-                                   const std::vector<Position>& changed_states,
-                                   const UserCallback& user_callback,
-                                   std::vector<Position>& path) = 0;
+  virtual PlannerStatus ReplanPath(
+      const Position& start, const std::vector<Position>& changed_positions,
+      const UserCallback& user_callback, std::vector<Position>& path) = 0;
 
   virtual std::optional<float> GetPathCost() const = 0;
 

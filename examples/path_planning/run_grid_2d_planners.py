@@ -60,10 +60,10 @@ def plan_path(planner, obstacle_data, start, goal):
   return path
 
 
-def replan_path(planner, start, changed_states):
+def replan_path(planner, start, changed_positions):
   path = []
   try:
-    path = planner.replan_path(start, changed_states)
+    path = planner.replan_path(start, changed_positions)
     print(f'Planning time: {planner.planning_time:.3f} seconds')
     print(f'Number of expansions: {planner.num_expansions}')
     print(f'Path cost: {planner.path_cost:.3f}')
@@ -98,18 +98,18 @@ def main():
   new_start = [185, 192]
 
   # Make the previous path infeasible.
-  changed_states = []
+  changed_positions = []
   for x in range(247, 249):
     for y in range(339, 353):
       obstacle_data[y, x] = 255
-      changed_states.append([x, y])
+      changed_positions.append([x, y])
 
   print('Running A*')
   # A* has no replanning capability, therefore we plan from scratch.
   new_astar_path = plan_path(astar_planner, obstacle_data, new_start, goal)
   print('Running D*Lite')
   new_dstar_lite_path = replan_path(dstar_lite_planner, new_start,
-                                    changed_states)
+                                    changed_positions)
 
   _, ((ax1, ax2), (ax3, ax4)) = pyplot.subplots(2, 2, sharex=True, sharey=True)
   plot_results(astar_path,

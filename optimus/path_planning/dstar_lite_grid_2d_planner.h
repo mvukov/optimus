@@ -34,14 +34,14 @@ std::optional<float> DStarLiteGrid2DPlanner::GetPathCost() const {
 
 template <>
 PlannerStatus DStarLiteGrid2DPlanner::ReplanPath(
-    const Position& start, const std::vector<Position>& changed_states,
+    const Position& start, const std::vector<Position>& changed_positions,
     const UserCallback& user_callback, std::vector<Position>& path) {
   start_index_.reset();
   const auto start_index = GetStateIndex(start);
   std::vector<int> changed_state_indices;
-  changed_state_indices.reserve(changed_states.size());
+  changed_state_indices.reserve(changed_positions.size());
   std::transform(
-      changed_states.begin(), changed_states.end(),
+      changed_positions.begin(), changed_positions.end(),
       std::back_inserter(changed_state_indices),
       [this](const auto& position) { return GetStateIndex(position); });
   std::vector<int> path_indices;  // TODO(mvukov) Make this a member variable?
