@@ -32,9 +32,9 @@ def optimus_repositories():
     maybe(
         http_archive,
         name = "com_github_nelhage_rules_boost",
-        sha256 = "ba18b6668b427635a20a45752fcc1807161b7fd0e9942f8ba4c78b996d173593",
-        strip_prefix = "rules_boost-fbfb6c665cfe223e9da343779c9da1a48e79e8c3",
-        urls = ["https://github.com/nelhage/rules_boost/archive/fbfb6c665cfe223e9da343779c9da1a48e79e8c3.zip"],
+        sha256 = "4d5c1aabea2970bcdf5962240b03c9fe0ce25779dd4d3554031b6c18bf134471",
+        strip_prefix = "rules_boost-33461a3c666af36d7a080e4fd6f554725df44132",
+        urls = ["https://github.com/nelhage/rules_boost/archive/33461a3c666af36d7a080e4fd6f554725df44132.zip"],
     )
 
     maybe(
@@ -48,9 +48,9 @@ def optimus_repositories():
     maybe(
         http_archive,
         name = "com_google_googletest",
-        sha256 = "ad7fdba11ea011c1d925b3289cf4af2c66a352e18d4c7264392fead75e919363",
-        strip_prefix = "googletest-1.13.0",
-        urls = ["https://github.com/google/googletest/archive/refs/tags/v1.13.0.tar.gz"],
+        sha256 = "8ad598c73ad796e0d8280b082cebd82a630d73e73cd3c70057938a6501bba5d7",
+        strip_prefix = "googletest-1.14.0",
+        urls = ["https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz"],
     )
 
     maybe(
