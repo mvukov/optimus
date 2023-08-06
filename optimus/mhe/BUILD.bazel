@@ -40,6 +40,7 @@ genrule(
 
 cc_test(
     name = "tests",
+    size = "small",
     srcs = [
         "mhe_qp_solver_tests.cc",
         ":mhe_qp_test_data",

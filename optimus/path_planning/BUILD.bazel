@@ -75,6 +75,7 @@ cc_library(
 
 cc_test(
     name = "tests",
+    size = "small",
     srcs = [
         "action_set_2d_tests.cc",
         "astar_planner_tests.cc",
@@ -94,6 +95,7 @@ cc_test(
 
 py_pytest_test(
     name = "primitive_generator_tests",
+    size = "small",
     srcs = [
         "primitive_generator_tests.py",
     ],

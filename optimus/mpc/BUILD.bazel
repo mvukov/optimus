@@ -19,6 +19,7 @@ cc_library(
 
 cc_test(
     name = "tests",
+    size = "small",
     srcs = [
         "nmpc_condensing_solver_tests.cc",
     ],
