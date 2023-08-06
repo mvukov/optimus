@@ -34,8 +34,8 @@ std::optional<float> DStarLiteGrid2DPlanner::GetPathCost() const {
 
 template <>
 PlannerStatus DStarLiteGrid2DPlanner::ReplanPath(
-    const Position& start, const std::vector<Position>& changed_positions,
-    const UserCallback& user_callback, std::vector<Position>& path) {
+    const Position2D& start, const std::vector<Position2D>& changed_positions,
+    const UserCallback& user_callback, std::vector<Position2D>& path) {
   start_index_.reset();
   const auto start_index = GetStateIndex(start);
   std::vector<int> changed_state_indices;

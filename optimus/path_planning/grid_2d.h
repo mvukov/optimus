@@ -24,6 +24,7 @@ using Grid2DScalar = std::uint8_t;
 using Grid2D = Eigen::Matrix<Grid2DScalar, Eigen::Dynamic, Eigen::Dynamic,
                              Eigen::RowMajor>;
 using Grid2DMap = Eigen::Map<const Grid2D>;
+using Position2D = Eigen::Vector2f;
 
 }  // namespace optimus
 

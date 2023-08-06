@@ -54,6 +54,9 @@ struct ActionSet2D {
   // in the angles array.
   std::vector<std::vector<State>> predecessors;
 
+  // Affected poses by a grid value change at position x = 0, y = 0.
+  std::vector<State> position_change_affected_states;
+
   [[nodiscard]] bool Validate() const;
   [[nodiscard]] int GetAngleIndex(float angle) const;
 };

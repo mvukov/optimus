@@ -25,8 +25,6 @@ namespace optimus {
 
 class Grid2DPlannerBase {
  public:
-  using Position = Eigen::Vector2f;
-
   explicit Grid2DPlannerBase(const Grid2DEnvironment::Config& config)
       : env_(config) {}
 
@@ -34,20 +32,21 @@ class Grid2DPlannerBase {
 
   [[nodiscard]] bool SetGrid2D(const Grid2DMap* grid_2d);
 
-  virtual PlannerStatus PlanPath(const Position& start, const Position& goal,
+  virtual PlannerStatus PlanPath(const Position2D& start,
+                                 const Position2D& goal,
                                  const UserCallback& user_callback,
-                                 std::vector<Position>& path) = 0;
+                                 std::vector<Position2D>& path) = 0;
 
   virtual PlannerStatus ReplanPath(
-      const Position& start, const std::vector<Position>& changed_positions,
-      const UserCallback& user_callback, std::vector<Position>& path) = 0;
+      const Position2D& start, const std::vector<Position2D>& changed_positions,
+      const UserCallback& user_callback, std::vector<Position2D>& path) = 0;
 
   virtual std::optional<float> GetPathCost() const = 0;
 
  protected:
-  int GetStateIndex(const Position& t) const;
+  int GetStateIndex(const Position2D& t) const;
   void ReconstructPath(const std::vector<int>& path_indices,
-                       std::vector<Position>& path) const;
+                       std::vector<Position2D>& path) const;
 
   Grid2DEnvironment env_;
   std::optional<int> start_index_;
@@ -60,14 +59,14 @@ class Grid2DPlanner final : public Grid2DPlannerBase {
   explicit Grid2DPlanner(const Grid2DEnvironment::Config& config)
       : Grid2DPlannerBase(config), algorithm_(&env_) {}
 
-  PlannerStatus PlanPath(const Position& start, const Position& goal,
+  PlannerStatus PlanPath(const Position2D& start, const Position2D& goal,
                          const UserCallback& user_callback,
-                         std::vector<Position>& path) final;
+                         std::vector<Position2D>& path) final;
 
-  PlannerStatus ReplanPath(const Position& start,
-                           const std::vector<Position>& changed_states,
+  PlannerStatus ReplanPath(const Position2D& start,
+                           const std::vector<Position2D>& changed_states,
                            const UserCallback& user_callback,
-                           std::vector<Position>& path) final;
+                           std::vector<Position2D>& path) final;
 
   std::optional<float> GetPathCost() const final;
 
@@ -77,8 +76,8 @@ class Grid2DPlanner final : public Grid2DPlannerBase {
 
 template <class Algorithm>
 PlannerStatus Grid2DPlanner<Algorithm>::PlanPath(
-    const Position& start, const Position& goal,
-    const UserCallback& user_callback, std::vector<Position>& path) {
+    const Position2D& start, const Position2D& goal,
+    const UserCallback& user_callback, std::vector<Position2D>& path) {
   start_index_.reset();
   goal_index_.reset();
   const auto start_index = GetStateIndex(start);

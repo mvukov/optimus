@@ -93,6 +93,10 @@ static const ActionSet2D g_{action_set_name} = {{
   // Per-angle-index predecessors
   {{
 {predecessors}
+  }},
+  // Affected states by a grid value change at position x = 0, y = 0
+  {{
+{position_change_affected_states}
   }}
 }};
 
@@ -175,6 +179,26 @@ def export_motion_primitives(angles: numpy.ndarray,
     current_predecessors_str = ', '.join(current_predecessors)
     predecessors.append(f'{{{current_predecessors_str}}}')
 
+  # For a grid value change at (0, 0) calculate all affected poses (states).
+  # If an action whose swath passes through (0, 0), the start pose of
+  # that action is affected by the change at (0, 0).
+  position_change_affected_states = set()
+  for p in motion_primitives:
+    p_swath_x = p.swath_x
+    p_swath_y = p.swath_y
+    abs_x_max = numpy.max(numpy.abs(p_swath_x))
+    abs_y_max = numpy.max(numpy.abs(p_swath_y))
+
+    for x_offset in range(-abs_x_max, abs_x_max + 1):
+      for y_offset in range(-abs_y_max, abs_y_max + 1):
+        if (0, 0) in zip(p_swath_x + x_offset, p_swath_y + y_offset):
+          position_change_affected_states.add(
+              (x_offset, y_offset, p.start_angle_idx))
+  position_change_affected_states = sorted(
+      list(position_change_affected_states), key=lambda s: (s[0], s[1], s[2]))
+  position_change_affected_states_str = ', '.join(
+      [f'{{{s[0]}, {s[1]}, {s[2]}}}' for s in position_change_affected_states])
+
   header_guard = file_name.upper()
   header_guard = ''.join([c if c.isalnum() else '_' for c in header_guard])
   action_set_name = os.path.splitext(os.path.basename(file_name))[0]
@@ -186,7 +210,9 @@ def export_motion_primitives(angles: numpy.ndarray,
       primitive_group_start_indices=export(
           numpy.asarray(primitive_group_start_indices)),
       primitives=',\n'.join(exported_primitives),
-      predecessors=',\n'.join(predecessors))
+      predecessors=',\n'.join(predecessors),
+      position_change_affected_states=position_change_affected_states_str,
+  )
   with open(file_name, 'w', encoding='utf-8') as stream:
     stream.write(output_content)
 

@@ -112,13 +112,12 @@ using ExampleDStarLiteSE2Planner = ExampleSE2Planner<DStarLiteSE2Planner>;
 template <class Planner>
 class PyGrid2DPlanner : public PyPlanner<PyGrid2DPlanner<Planner>> {
  public:
-  using Position = typename Planner::Position;
-
   explicit PyGrid2DPlanner(const Grid2DEnvironment::Config& config)
       : planner_(config) {}
 
-  std::vector<Position> PlanPath(const Position& start, const Position& goal) {
-    std::vector<Position> path;
+  std::vector<Position2D> PlanPath(const Position2D& start,
+                                   const Position2D& goal) {
+    std::vector<Position2D> path;
     planning_time_ = 0;
     num_expansions_ = 0;
     auto callback = [this](UserCallbackEvent event) {
@@ -139,9 +138,10 @@ class PyGrid2DPlanner : public PyPlanner<PyGrid2DPlanner<Planner>> {
     return path;
   }
 
-  std::vector<Position> ReplanPath(
-      const Position& start, const std::vector<Position>& changed_positions) {
-    std::vector<Position> path;
+  std::vector<Position2D> ReplanPath(
+      const Position2D& start,
+      const std::vector<Position2D>& changed_positions) {
+    std::vector<Position2D> path;
     planning_time_ = 0;
     num_expansions_ = 0;
     auto callback = [this](UserCallbackEvent event) {

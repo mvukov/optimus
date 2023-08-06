@@ -32,10 +32,10 @@ std::optional<float> AStarGrid2DPlanner::GetPathCost() const {
 }
 
 template <>
-PlannerStatus AStarGrid2DPlanner::ReplanPath(const Position&,
-                                             const std::vector<Position>&,
+PlannerStatus AStarGrid2DPlanner::ReplanPath(const Position2D&,
+                                             const std::vector<Position2D>&,
                                              const UserCallback&,
-                                             std::vector<Position>&) {
+                                             std::vector<Position2D>&) {
   return PlannerStatus::kNotImplemented;
 }
 
