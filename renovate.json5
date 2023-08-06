@@ -18,5 +18,5 @@
       groupName: "pre-commit-deps",
     },
   ],
-  schedule: ["every weekend"],
+  schedule: ["every saturday"],
 }
