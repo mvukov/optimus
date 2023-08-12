@@ -77,6 +77,9 @@ class ExampleSE2Planner : public PyPlanner<ExampleSE2Planner<Planner>> {
     planning_time_ = 0;
     num_expansions_ = 0;
     auto callback = [this](UserCallbackEvent event) {
+      if (PyErr_CheckSignals() != 0) {
+        throw py::error_already_set();
+      }
       if (event == UserCallbackEvent::kSearch) {
         ++num_expansions_;
       }
@@ -121,6 +124,9 @@ class PyGrid2DPlanner : public PyPlanner<PyGrid2DPlanner<Planner>> {
     planning_time_ = 0;
     num_expansions_ = 0;
     auto callback = [this](UserCallbackEvent event) {
+      if (PyErr_CheckSignals() != 0) {
+        throw py::error_already_set();
+      }
       if (event == UserCallbackEvent::kSearch) {
         ++num_expansions_;
       }
