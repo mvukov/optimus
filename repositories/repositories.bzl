@@ -32,9 +32,9 @@ def optimus_repositories():
     maybe(
         http_archive,
         name = "com_github_nelhage_rules_boost",
-        sha256 = "04dc566010502ce58cd72c2a1fdd1d22c19a12973e1c34d9768d1978bea25195",
-        strip_prefix = "rules_boost-78d7f079606f0a1eac77860f991e3d1cd4e45b38",
-        urls = ["https://github.com/nelhage/rules_boost/archive/78d7f079606f0a1eac77860f991e3d1cd4e45b38.zip"],
+        sha256 = "1ed97edc57bf47a4f1426e6444b6ec5ccbe474c7de08af663f20c0d3c53f9896",
+        strip_prefix = "rules_boost-3649e5ea16a1ed85e45a809c165a3540bd701849",
+        urls = ["https://github.com/nelhage/rules_boost/archive/3649e5ea16a1ed85e45a809c165a3540bd701849.zip"],
     )
 
     maybe(
