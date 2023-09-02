@@ -95,8 +95,6 @@ bool SE2Environment::Initialize() {
 void SE2Environment::GetNeighborsAndCosts(
     int pivot, std::vector<int>& neighbors,
     std::vector<float>& pivot_to_neighbor_costs) {
-  OPTIMUS_CHECK(grid_2d_ != nullptr);
-
   std::fill(neighbors.begin(), neighbors.end(), kInvalidIndex);
   std::fill(pivot_to_neighbor_costs.begin(), pivot_to_neighbor_costs.end(),
             kInfCost);
@@ -138,6 +136,7 @@ void SE2Environment::GetNeighborsAndCosts(
       const auto candidate_cost = (*grid_2d_)(candidate_y, candidate_x);
       // TODO(mvukov) Should call IsStateValid here!
       if (candidate_cost > config_.valid_state_threshold) {
+        // TODO(mvukov) cost = kInfCost;
         discard = true;
         break;
       }
@@ -185,6 +184,7 @@ void SE2Environment::GetPredecessors(int pivot,
         predecessor_state.angle_idx;
     ++offset;
   }
+  OPTIMUS_CHECK(offset <= max_num_neighbors_);
 }
 
 }  // namespace optimus
