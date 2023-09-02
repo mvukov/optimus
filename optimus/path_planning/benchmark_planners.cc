@@ -67,8 +67,6 @@ class BenchmarkPlanner : public benchmark::Fixture {
 
 class BenchmarkGrid2dPlanner : public BenchmarkPlanner {
  public:
-  using Position = Grid2DPlannerBase::Position;
-
   BenchmarkGrid2dPlanner() {
     env_config_.valid_state_threshold = 15;
 
@@ -82,7 +80,7 @@ class BenchmarkGrid2dPlanner : public BenchmarkPlanner {
       return;
     }
 
-    std::vector<Position> path;
+    std::vector<Position2D> path;
     for (auto _ : state) {
       if (planner_->PlanPath(start_, goal_, {}, path) !=
           PlannerStatus::kSuccess) {
@@ -92,8 +90,8 @@ class BenchmarkGrid2dPlanner : public BenchmarkPlanner {
   }
 
   Grid2DEnvironment::Config env_config_;
-  Position start_;
-  Position goal_;
+  Position2D start_;
+  Position2D goal_;
   std::unique_ptr<Grid2DPlannerBase> planner_;
 };
 
