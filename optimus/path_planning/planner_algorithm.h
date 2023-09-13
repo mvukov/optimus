@@ -16,6 +16,7 @@
 
 #include <functional>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace optimus {
@@ -46,7 +47,8 @@ class PlannerAlgorithm {
   PlannerStatus PlanPath(int start, int goal, const UserCallback& user_callback,
                          std::vector<int>& path);
 
-  PlannerStatus ReplanPath(int start, const std::vector<int>& changed_states,
+  PlannerStatus ReplanPath(int start,
+                           const std::unordered_set<int>& states_to_update,
                            const UserCallback& user_callback,
                            std::vector<int>& path);
 
@@ -76,13 +78,13 @@ PlannerStatus PlannerAlgorithm<D, E>::PlanPath(
 
 template <class D, class E>
 PlannerStatus PlannerAlgorithm<D, E>::ReplanPath(
-    int start, const std::vector<int>& changed_states,
+    int start, const std::unordered_set<int>& states_to_update,
     const UserCallback& user_callback, std::vector<int>& path) {
   if (auto status = Validate(start, nullptr);
       status != PlannerStatus::kSuccess) {
     return status;
   }
-  return static_cast<D*>(this)->ReplanPathImpl(start, changed_states,
+  return static_cast<D*>(this)->ReplanPathImpl(start, states_to_update,
                                                user_callback, path);
 }
 

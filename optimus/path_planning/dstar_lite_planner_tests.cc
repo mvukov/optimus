@@ -89,7 +89,14 @@ class TestDStarLiteReplanningOn2DGrid : public TestDStarLitePlannerOn2DGrid {
 
   auto Replan(int start) {
     SetObstacles(new_obstacles_);
-    return planner_->ReplanPath(start, new_obstacles_, {}, path_);
+    std::unordered_set<int> states_to_update;
+    std::vector<int> predecessors(env_->GetMaxNumPredecessors(), kInvalidIndex);
+    for (auto new_obstacle : new_obstacles_) {
+      states_to_update.insert(new_obstacle);
+      env_->GetPredecessors(new_obstacle, predecessors);
+      states_to_update.insert(predecessors.begin(), predecessors.end());
+    }
+    return planner_->ReplanPath(start, states_to_update, {}, path_);
   }
 
   std::vector<int> new_obstacles_;

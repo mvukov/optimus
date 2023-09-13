@@ -15,6 +15,7 @@
 #define OPTIMUS_PATH_PLANNING_DSTAR_LITE_PLANNER_H_
 
 #include <algorithm>
+#include <unordered_set>
 #include <vector>
 
 #include "optimus/path_planning/planner_algorithm.h"
@@ -35,7 +36,7 @@ class DStarLitePlanner
                              std::vector<int>& path);
 
   PlannerStatus ReplanPathImpl(int start,
-                               const std::vector<int>& changed_states,
+                               const std::unordered_set<int>& states_to_update,
                                const UserCallback& user_callback,
                                std::vector<int>& path);
 
@@ -245,22 +246,22 @@ PlannerStatus DStarLitePlanner<E>::ReconstructShortestPath(
 
 template <class E>
 PlannerStatus DStarLitePlanner<E>::ReplanPathImpl(
-    int start, const std::vector<int>& changed_states,
+    int start, const std::unordered_set<int>& states_to_update,
     const UserCallback& user_callback, std::vector<int>& path) {
   if (goal_ == kInvalidIndex) {
     return PlannerStatus::kInternalError;
   }
 
-  if (changed_states.empty() && start_ == start) {
+  if (states_to_update.empty() && start_ == start) {
     return ReconstructShortestPath(user_callback, path);
   }
 
-  if (!changed_states.empty() && start_ == start) {
+  if (!states_to_update.empty() && start_ == start) {
     g_values_[start] = rhs_values_[start] = kInfCost;
   }
 
-  for (auto state : changed_states) {
-    UpdatePredecessors(state);
+  for (auto state : states_to_update) {
+    UpdateVertex(state);
   }
 
   if (open_queue_.empty()) {

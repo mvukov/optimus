@@ -13,6 +13,8 @@
 // limitations under the License.
 #ifndef OPTIMUS_PATH_PLANNING_DSTAR_LITE_GRID_2D_PLANNER_H_
 #define OPTIMUS_PATH_PLANNING_DSTAR_LITE_GRID_2D_PLANNER_H_
+
+#include <unordered_set>
 #include <vector>
 
 #include "optimus/path_planning/dstar_lite_planner.h"
@@ -38,14 +40,20 @@ PlannerStatus DStarLiteGrid2DPlanner::ReplanPath(
     const UserCallback& user_callback, std::vector<Position2D>& path) {
   start_index_.reset();
   const auto start_index = GetStateIndex(start);
-  std::vector<int> changed_state_indices;
-  changed_state_indices.reserve(changed_positions.size());
-  std::transform(
-      changed_positions.begin(), changed_positions.end(),
-      std::back_inserter(changed_state_indices),
-      [this](const auto& position) { return GetStateIndex(position); });
+
+  std::unordered_set<int> states_to_update;
+  std::vector<int> predecessors(env_.GetMaxNumPredecessors(), kInvalidIndex);
+  for (const auto& changed_position : changed_positions) {
+    const auto changed_state = GetStateIndex(changed_position);
+    if (changed_state == kInvalidIndex) {
+      continue;
+    }
+    env_.GetPredecessors(changed_state, predecessors);
+    states_to_update.insert(predecessors.begin(), predecessors.end());
+  }
+
   std::vector<int> path_indices;  // TODO(mvukov) Make this a member variable?
-  if (auto status = algorithm_.ReplanPath(start_index, changed_state_indices,
+  if (auto status = algorithm_.ReplanPath(start_index, states_to_update,
                                           user_callback, path_indices);
       status != PlannerStatus::kSuccess) {
     return status;
