@@ -20,7 +20,7 @@
 
 namespace optimus {
 
-static constexpr float kInfCost = std::numeric_limits<float>::infinity();
+static constexpr float kInfCost = std::numeric_limits<float>::max();
 static constexpr int kInvalidIndex = -1;
 
 static inline bool AreEqual(
@@ -38,7 +38,7 @@ static inline bool IsGreater(
   return a > b + tolerance;
 }
 
-static inline bool IsInf(float a) { return std::isinf(a); }
+static inline bool IsInf(float a) { return AreEqual(a, kInfCost); }
 
 static inline int GetNumBits(int v) {
   if (v < 0) {
