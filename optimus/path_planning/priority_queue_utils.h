@@ -78,6 +78,11 @@ class PriorityQueue {
     hash_map_[index] = heap_.emplace(index, key);
   }
 
+  void Remove(int index) {
+    heap_.erase(hash_map_.at(index));
+    hash_map_.erase(index);
+  }
+
   auto HasIndex(int index) const { return hash_map_.count(index) > 0; }
 
   void InsertOrUpdate(int index, Key key) {

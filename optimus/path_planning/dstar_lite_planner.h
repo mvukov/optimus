@@ -53,7 +53,6 @@ class DStarLitePlanner
                                         std::vector<int>& path);
 
   PriorityQueue open_queue_;
-  std::vector<bool> open_states_;
   std::vector<float> g_values_;
   std::vector<float> rhs_values_;
   std::vector<int> best_next_states_;
@@ -80,7 +79,6 @@ PlannerStatus DStarLitePlanner<E>::PlanPathImpl(
 
   rhs_values_[goal] = 0;
   open_queue_.insert(goal, CalculateKey(goal));
-  open_states_[goal] = true;
 
   if (auto status = CalculateShortestPath(user_callback);
       status != PlannerStatus::kSuccess) {
@@ -93,9 +91,6 @@ template <class E>
 void DStarLitePlanner<E>::Reset() {
   const auto state_space_size = this->env_->GetStateSpaceSize();
   open_queue_.clear();
-
-  open_states_.resize(state_space_size, false);
-  std::fill(open_states_.begin(), open_states_.end(), false);
 
   g_values_.resize(state_space_size, kInfCost);
   std::fill(g_values_.begin(), g_values_.end(), kInfCost);
@@ -139,10 +134,6 @@ PlannerStatus DStarLitePlanner<E>::CalculateShortestPath(
     open_queue_.pop();
 
     const auto pivot_index = pivot.index;
-    if (!open_states_[pivot_index]) {
-      continue;
-    }
-    open_states_[pivot_index] = false;
 
     if (user_callback && !user_callback(UserCallbackEvent::kSearch)) {
       return PlannerStatus::kUserAbort;
@@ -150,8 +141,8 @@ PlannerStatus DStarLitePlanner<E>::CalculateShortestPath(
 
     const auto new_pivot_key = CalculateKey(pivot_index);
     if (pivot.key < new_pivot_key) {
-      open_queue_.insert(pivot_index, new_pivot_key);
-      open_states_[pivot_index] = true;
+      // Avoid pop and do update. pop is for the 2 cases below.
+      open_queue_.InsertOrUpdate(pivot_index, new_pivot_key);
     } else if (IsGreater(g_values_[pivot_index], rhs_values_[pivot_index])) {
       // Locally overconsistent case, the new path is better than the old one.
       g_values_[pivot_index] = rhs_values_[pivot_index];
@@ -208,10 +199,9 @@ void DStarLitePlanner<E>::UpdateVertex(int pivot) {
   best_next_states_[pivot] = min_rhs_successor;
 
   if (!AreEqual(g_values_[pivot], rhs_values_[pivot])) {
-    open_queue_.insert(pivot, CalculateKey(pivot));
-    open_states_[pivot] = true;
-  } else {
-    open_states_[pivot] = false;
+    open_queue_.InsertOrUpdate(pivot, CalculateKey(pivot));
+  } else if (open_queue_.HasIndex(pivot)) {
+    open_queue_.Remove(pivot);
   }
 }
 
@@ -265,7 +255,6 @@ PlannerStatus DStarLitePlanner<E>::ReplanPathImpl(
 
   if (open_queue_.empty()) {
     open_queue_.insert(goal_, Key{g_values_[goal_], rhs_values_[goal_]});
-    open_states_[goal_] = true;
   }
 
   start_ = start;
