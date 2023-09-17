@@ -146,7 +146,7 @@ PlannerStatus DStarLitePlanner<E>::CalculateShortestPath(
         // Locally overconsistent case, the new path is better than the old one.
         g_values_[pivot_index] = rhs_values_[pivot_index];
         UpdatePredecessors(pivot_index);
-      } else if (IsLess(g_values_[pivot_index], rhs_values_[pivot_index])) {
+      } else {
         // Locally underconsistent case, the new path is worse than the old one.
         g_values_[pivot_index] = kInfCost;
         UpdateVertex(pivot_index);
