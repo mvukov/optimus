@@ -79,7 +79,7 @@ PlannerStatus DStarLitePlanner<E>::PlanPathImpl(
   key_modifier_ = 0;
 
   rhs_values_[goal] = 0;
-  open_queue_.emplace(goal, CalculateKey(goal));
+  open_queue_.insert(goal, CalculateKey(goal));
   open_states_[goal] = true;
 
   if (auto status = CalculateShortestPath(user_callback);
@@ -93,7 +93,6 @@ template <class E>
 void DStarLitePlanner<E>::Reset() {
   const auto state_space_size = this->env_->GetStateSpaceSize();
   open_queue_.clear();
-  open_queue_.reserve(state_space_size);
 
   open_states_.resize(state_space_size, false);
   std::fill(open_states_.begin(), open_states_.end(), false);
@@ -151,7 +150,7 @@ PlannerStatus DStarLitePlanner<E>::CalculateShortestPath(
 
     const auto new_pivot_key = CalculateKey(pivot_index);
     if (pivot.key < new_pivot_key) {
-      open_queue_.emplace(pivot_index, new_pivot_key);
+      open_queue_.insert(pivot_index, new_pivot_key);
       open_states_[pivot_index] = true;
     } else if (IsGreater(g_values_[pivot_index], rhs_values_[pivot_index])) {
       // Locally overconsistent case, the new path is better than the old one.
@@ -209,7 +208,7 @@ void DStarLitePlanner<E>::UpdateVertex(int pivot) {
   best_next_states_[pivot] = min_rhs_successor;
 
   if (!AreEqual(g_values_[pivot], rhs_values_[pivot])) {
-    open_queue_.emplace(pivot, CalculateKey(pivot));
+    open_queue_.insert(pivot, CalculateKey(pivot));
     open_states_[pivot] = true;
   } else {
     open_states_[pivot] = false;
@@ -265,7 +264,7 @@ PlannerStatus DStarLitePlanner<E>::ReplanPathImpl(
   }
 
   if (open_queue_.empty()) {
-    open_queue_.emplace(goal_, Key{g_values_[goal_], rhs_values_[goal_]});
+    open_queue_.insert(goal_, Key{g_values_[goal_], rhs_values_[goal_]});
     open_states_[goal_] = true;
   }
 

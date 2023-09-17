@@ -18,7 +18,8 @@
 #include <functional>
 #include <utility>
 
-#include "boost/heap/priority_queue.hpp"
+#include "boost/heap/fibonacci_heap.hpp"
+#include "boost/unordered/unordered_flat_map.hpp"
 
 #include "optimus/path_planning/common_utils.h"
 
@@ -52,9 +53,45 @@ struct IndexAndKey {
   bool operator>(const IndexAndKey& other) const { return key > other.key; }
 };
 
-using PriorityQueue =
-    boost::heap::priority_queue<IndexAndKey,
-                                boost::heap::compare<std::greater<>>>;
+class PriorityQueue {
+ public:
+  using Heap =
+      boost::heap::fibonacci_heap<IndexAndKey,
+                                  boost::heap::compare<std::greater<>>>;
+  // Assumption is that there can only be a single element with a unique index.
+  using HashMap = boost::unordered::unordered_flat_map<int, Heap::handle_type>;
+
+  auto empty() const { return heap_.empty(); }
+  void clear() {
+    heap_.clear();
+    hash_map_.clear();
+  }
+
+  const auto& top() const { return heap_.top(); }
+  void pop() {
+    auto top_index = top().index;
+    heap_.pop();
+    hash_map_.erase(top_index);  // TODO(mvukov) The return value must be 1.
+  }
+
+  void insert(int index, Key key) {
+    hash_map_[index] = heap_.emplace(index, key);
+  }
+
+  auto HasIndex(int index) const { return hash_map_.count(index) > 0; }
+
+  void InsertOrUpdate(int index, Key key) {
+    if (HasIndex(index)) {
+      heap_.update(hash_map_[index], IndexAndKey(index, key));
+    } else {
+      insert(index, key);
+    }
+  }
+
+ private:
+  Heap heap_;
+  HashMap hash_map_;
+};
 
 }  // namespace optimus
 

@@ -28,7 +28,7 @@ std::optional<float> AStarGrid2DPlanner::GetPathCost() const {
   if (!goal_index_) {
     return std::nullopt;
   }
-  return algorithm_.g_values().at(*goal_index_);
+  return algorithm_.GetGValue(*goal_index_);
 }
 
 template <>

@@ -16,6 +16,9 @@
 
 #include <vector>
 
+#include "boost/unordered/unordered_flat_map.hpp"
+#include "boost/unordered/unordered_flat_set.hpp"
+
 #include "optimus/path_planning/planner_algorithm.h"
 #include "optimus/path_planning/priority_queue_utils.h"
 
@@ -33,7 +36,7 @@ class AStarPlanner
                              const UserCallback& user_callback,
                              std::vector<int>& path);
 
-  const auto& g_values() const { return g_values_; }
+  auto GetGValue(int index) const { return indices_to_g_values_.at(index); }
 
  private:
   void Reset();
@@ -44,9 +47,12 @@ class AStarPlanner
                                std::vector<int>& path);
 
   PriorityQueue open_queue_;
-  std::vector<bool> visited_indices_;
-  std::vector<int> parent_indices_;
-  std::vector<float> g_values_;
+
+  // It is way faster to have those below as std::vector at the expense of
+  // increased memory consumption.
+  boost::unordered::unordered_flat_set<int> closed_;
+  boost::unordered::unordered_flat_map<int, int> indices_to_parent_indices_;
+  boost::unordered::unordered_flat_map<int, float> indices_to_g_values_;
 
   std::vector<int> neighbors_;
   std::vector<float> pivot_to_neighbor_costs_;
@@ -58,10 +64,9 @@ PlannerStatus AStarPlanner<E>::PlanPathImpl(int start, int goal,
                                             std::vector<int>& path) {
   Reset();
 
-  open_queue_.emplace(start, Key{this->env_->GetHeuristicCost(start, goal), 0});
-  visited_indices_[start] = true;
-  parent_indices_[start] = start;
-  g_values_[start] = 0;
+  open_queue_.insert(start, Key{this->env_->GetHeuristicCost(start, goal), 0});
+  indices_to_parent_indices_[start] = start;
+  indices_to_g_values_[start] = 0;
 
   if (auto status = Expand(goal, user_callback);
       status != PlannerStatus::kSuccess) {
@@ -77,13 +82,12 @@ template <class E>
 void AStarPlanner<E>::Reset() {
   const auto state_space_size = this->env_->GetStateSpaceSize();
   open_queue_.clear();
-  open_queue_.reserve(state_space_size);
-  visited_indices_.resize(state_space_size, false);
-  std::fill(visited_indices_.begin(), visited_indices_.end(), false);
-  parent_indices_.resize(state_space_size, kInvalidIndex);
-  std::fill(parent_indices_.begin(), parent_indices_.end(), kInvalidIndex);
-  g_values_.resize(state_space_size, kInfCost);
-  std::fill(g_values_.begin(), g_values_.end(), kInfCost);
+  closed_.clear();
+  closed_.reserve(state_space_size);
+  indices_to_parent_indices_.clear();
+  indices_to_parent_indices_.reserve(state_space_size);
+  indices_to_g_values_.clear();
+  indices_to_g_values_.reserve(state_space_size);
 
   const auto max_num_neighbors = this->env_->GetMaxNumNeighbors();
   neighbors_.resize(max_num_neighbors, kInvalidIndex);
@@ -109,13 +113,18 @@ PlannerStatus AStarPlanner<E>::Expand(int goal,
       return PlannerStatus::kUserAbort;
     }
 
+    closed_.insert(pivot_index);
     this->env_->GetNeighborsAndCosts(pivot_index, neighbors_,
                                      pivot_to_neighbor_costs_);
     const auto max_num_neighbors = this->env_->GetMaxNumNeighbors();
     for (int el = 0; el < max_num_neighbors; ++el) {
       const auto neighbor = neighbors_[el];
-      if (neighbor == kInvalidIndex || visited_indices_[neighbor]) {
+      if (neighbor == kInvalidIndex || closed_.count(neighbor) > 0) {
         continue;
+      }
+      if (indices_to_g_values_.count(neighbor) == 0) {
+        indices_to_g_values_[neighbor] = kInfCost;
+        indices_to_parent_indices_[neighbor] = kInvalidIndex;
       }
       UpdateIndex(goal, pivot_index, neighbor, pivot_to_neighbor_costs_[el]);
     }
@@ -127,13 +136,13 @@ PlannerStatus AStarPlanner<E>::Expand(int goal,
 template <class E>
 void AStarPlanner<E>::UpdateIndex(int goal, int pivot, int neighbor,
                                   float pivot_to_neighbor_cost) {
-  const auto new_g_value_ = g_values_[pivot] + pivot_to_neighbor_cost;
-  if (new_g_value_ < g_values_[neighbor]) {
-    g_values_[neighbor] = new_g_value_;
-    visited_indices_[neighbor] = true;
-    parent_indices_[neighbor] = pivot;
+  const auto new_g_value_ =
+      indices_to_g_values_[pivot] + pivot_to_neighbor_cost;
+  if (new_g_value_ < indices_to_g_values_[neighbor]) {
+    indices_to_g_values_[neighbor] = new_g_value_;
+    indices_to_parent_indices_[neighbor] = pivot;
 
-    open_queue_.emplace(
+    open_queue_.InsertOrUpdate(
         neighbor,
         Key{new_g_value_ + this->env_->GetHeuristicCost(neighbor, goal),
             new_g_value_});
@@ -144,20 +153,13 @@ template <class E>
 bool AStarPlanner<E>::ReconstructShortestPath(int goal,
                                               const UserCallback& user_callback,
                                               std::vector<int>& path) {
-  if (!visited_indices_.at(goal)) {
-    return false;
-  }
-
   auto path_length = 1;
   auto current = goal;
   while (true) {
     if (user_callback && !user_callback(UserCallbackEvent::kReconstruction)) {
       return false;
     }
-    auto parent = parent_indices_.at(current);
-    if (!visited_indices_.at(parent)) {
-      return false;
-    }
+    auto parent = indices_to_parent_indices_.at(current);
     if (parent == current) {
       break;
     }
@@ -170,7 +172,7 @@ bool AStarPlanner<E>::ReconstructShortestPath(int goal,
   auto offset = path.size() - 2;
   current = goal;
   while (true) {
-    auto parent = parent_indices_.at(current);
+    auto parent = indices_to_parent_indices_.at(current);
     if (parent == current) {
       break;
     }

@@ -29,7 +29,7 @@ std::optional<float> AStarSE2Planner::GetPathCost() const {
   if (!goal_index_) {
     return std::nullopt;
   }
-  return algorithm_.g_values().at(*goal_index_);
+  return algorithm_.GetGValue(*goal_index_);
 }
 
 }  // namespace optimus

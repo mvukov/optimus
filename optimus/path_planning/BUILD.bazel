@@ -69,6 +69,7 @@ cc_library(
         "@boost//:preprocessor",
         "@boost//:static_assert",
         "@boost//:type_traits",
+        "@boost//:unordered",
         "@eigen",
     ],
 )
