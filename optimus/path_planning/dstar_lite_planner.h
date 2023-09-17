@@ -126,13 +126,10 @@ PlannerStatus DStarLitePlanner<E>::CalculateShortestPath(
   // Each vertex can be expanded at most twice.
   const auto max_num_iterations = 2 * this->env_->GetStateSpaceSize();
   auto num_iterations = 0;
-  const auto start_key = CalculateKey(start_);
   while (!open_queue_.empty() &&
-         (open_queue_.top().key < start_key ||
+         (open_queue_.top().key < CalculateKey(start_) ||
           !AreEqual(rhs_values_[start_], g_values_[start_]))) {
     const auto pivot = open_queue_.top();
-    open_queue_.pop();
-
     const auto pivot_index = pivot.index;
 
     if (user_callback && !user_callback(UserCallbackEvent::kSearch)) {
@@ -143,20 +140,18 @@ PlannerStatus DStarLitePlanner<E>::CalculateShortestPath(
     if (pivot.key < new_pivot_key) {
       // Avoid pop and do update. pop is for the 2 cases below.
       open_queue_.InsertOrUpdate(pivot_index, new_pivot_key);
-    } else if (IsGreater(g_values_[pivot_index], rhs_values_[pivot_index])) {
-      // Locally overconsistent case, the new path is better than the old one.
-      g_values_[pivot_index] = rhs_values_[pivot_index];
-      UpdatePredecessors(pivot_index);
-    } else if (IsLess(g_values_[pivot_index], rhs_values_[pivot_index])) {
-      // Locally underconsistent case, the new path is worse than the old one.
-      g_values_[pivot_index] = kInfCost;
-      UpdateVertex(pivot_index);
-      UpdatePredecessors(pivot_index);
-    }
-
-    if (pivot_index == start_ &&
-        AreEqual(g_values_[pivot_index], rhs_values_[pivot_index])) {
-      break;
+    } else {
+      open_queue_.pop();
+      if (IsGreater(g_values_[pivot_index], rhs_values_[pivot_index])) {
+        // Locally overconsistent case, the new path is better than the old one.
+        g_values_[pivot_index] = rhs_values_[pivot_index];
+        UpdatePredecessors(pivot_index);
+      } else if (IsLess(g_values_[pivot_index], rhs_values_[pivot_index])) {
+        // Locally underconsistent case, the new path is worse than the old one.
+        g_values_[pivot_index] = kInfCost;
+        UpdateVertex(pivot_index);
+        UpdatePredecessors(pivot_index);
+      }
     }
 
     if (++num_iterations == max_num_iterations) {
@@ -245,16 +240,8 @@ PlannerStatus DStarLitePlanner<E>::ReplanPathImpl(
     return ReconstructShortestPath(user_callback, path);
   }
 
-  if (!states_to_update.empty() && start_ == start) {
-    g_values_[start] = rhs_values_[start] = kInfCost;
-  }
-
   for (auto state : states_to_update) {
     UpdateVertex(state);
-  }
-
-  if (open_queue_.empty()) {
-    open_queue_.insert(goal_, Key{g_values_[goal_], rhs_values_[goal_]});
   }
 
   start_ = start;
