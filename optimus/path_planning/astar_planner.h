@@ -47,10 +47,11 @@ class AStarPlanner
                                std::vector<int>& path);
 
   PriorityQueue open_queue_;
+  std::vector<bool> closed_indices_;
+  std::vector<bool> visited_indices_;
 
   // It is way faster to have those below as std::vector at the expense of
   // increased memory consumption.
-  boost::unordered::unordered_flat_set<int> closed_;
   boost::unordered::unordered_flat_map<int, int> indices_to_parent_indices_;
   boost::unordered::unordered_flat_map<int, float> indices_to_g_values_;
 
@@ -65,8 +66,9 @@ PlannerStatus AStarPlanner<E>::PlanPathImpl(int start, int goal,
   Reset();
 
   open_queue_.insert(start, Key{this->env_->GetHeuristicCost(start, goal), 0});
-  indices_to_parent_indices_[start] = start;
   indices_to_g_values_[start] = 0;
+  indices_to_parent_indices_[start] = start;
+  visited_indices_[start] = true;
 
   if (auto status = Expand(goal, user_callback);
       status != PlannerStatus::kSuccess) {
@@ -82,8 +84,10 @@ template <class E>
 void AStarPlanner<E>::Reset() {
   const auto state_space_size = this->env_->GetStateSpaceSize();
   open_queue_.clear();
-  closed_.clear();
-  closed_.reserve(state_space_size);
+  closed_indices_.clear();
+  closed_indices_.resize(state_space_size, false);
+  visited_indices_.clear();
+  visited_indices_.resize(state_space_size, false);
   indices_to_parent_indices_.clear();
   indices_to_parent_indices_.reserve(state_space_size);
   indices_to_g_values_.clear();
@@ -113,18 +117,14 @@ PlannerStatus AStarPlanner<E>::Expand(int goal,
       return PlannerStatus::kUserAbort;
     }
 
-    closed_.insert(pivot_index);
+    closed_indices_[pivot_index] = true;
     this->env_->GetNeighborsAndCosts(pivot_index, neighbors_,
                                      pivot_to_neighbor_costs_);
     const auto max_num_neighbors = this->env_->GetMaxNumNeighbors();
     for (int el = 0; el < max_num_neighbors; ++el) {
       const auto neighbor = neighbors_[el];
-      if (neighbor == kInvalidIndex || closed_.count(neighbor) > 0) {
+      if (neighbor == kInvalidIndex || closed_indices_[neighbor]) {
         continue;
-      }
-      if (indices_to_g_values_.count(neighbor) == 0) {
-        indices_to_g_values_[neighbor] = kInfCost;
-        indices_to_parent_indices_[neighbor] = kInvalidIndex;
       }
       UpdateIndex(goal, pivot_index, neighbor, pivot_to_neighbor_costs_[el]);
     }
@@ -136,6 +136,12 @@ PlannerStatus AStarPlanner<E>::Expand(int goal,
 template <class E>
 void AStarPlanner<E>::UpdateIndex(int goal, int pivot, int neighbor,
                                   float pivot_to_neighbor_cost) {
+  if (!visited_indices_[neighbor]) {
+    indices_to_g_values_[neighbor] = kInfCost;
+    indices_to_parent_indices_[neighbor] = kInvalidIndex;
+    visited_indices_[neighbor] = true;
+  }
+
   const auto new_g_value_ =
       indices_to_g_values_[pivot] + pivot_to_neighbor_cost;
   if (new_g_value_ < indices_to_g_values_[neighbor]) {
