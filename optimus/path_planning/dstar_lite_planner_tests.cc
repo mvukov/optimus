@@ -152,11 +152,11 @@ TEST_F(TestDStarLiteReplanningOn2DGrid,
   EXPECT_THAT(path_, Eq(expected_path_));
 }
 
-class TestDStarLitePlanner : public Test {
+class DISABLED_TestDStarLitePlanner : public Test {
  public:
   using Planner = DStarLitePlanner<PlannerEnvironmentMock>;
 
-  TestDStarLitePlanner() {
+  DISABLED_TestDStarLitePlanner() {
     env_.SetUpValidEnv();
     env_.SetUpExpectedValidationCalls();
     planner_ = std::make_unique<Planner>(&env_);
@@ -183,88 +183,89 @@ class TestDStarLitePlanner : public Test {
   std::vector<int> path_;
 };
 
-// TEST_F(TestDStarLitePlanner, WhenFeasibleProblem_ThenPlanPathSucceeds) {
-//   InSequence in_sequence;
+TEST_F(DISABLED_TestDStarLitePlanner,
+       WhenFeasibleProblem_ThenPlanPathSucceeds) {
+  InSequence in_sequence;
 
-//   SetUpInit();
+  SetUpInit();
 
-//   // Iteration
-//   EXPECT_CALL(user_callback_, Call);
-//   EXPECT_CALL(env_, GetHeuristicCost(0, 2)).WillOnce(Return(2));
-//   EXPECT_CALL(env_, GetPredecessors(2, _))
-//       .WillOnce([](int, std::vector<int>& p) { p = {1}; });
-//   EXPECT_CALL(env_, GetNeighborsAndCosts(1, _, _))
-//       .WillOnce([](int, std::vector<int>& n, std::vector<float>& c) {
-//         n = {2};
-//         c = {0.1};
-//       });
-//   EXPECT_CALL(env_, GetMaxNumNeighbors);
-//   EXPECT_CALL(env_, GetHeuristicCost(0, 1)).WillOnce(Return(0.5));
+  // Iteration
+  EXPECT_CALL(user_callback_, Call);
+  EXPECT_CALL(env_, GetHeuristicCost(0, 2)).WillOnce(Return(2));
+  EXPECT_CALL(env_, GetPredecessors(2, _))
+      .WillOnce([](int, std::vector<int>& p) { p = {1}; });
+  EXPECT_CALL(env_, GetNeighborsAndCosts(1, _, _))
+      .WillOnce([](int, std::vector<int>& n, std::vector<float>& c) {
+        n = {2};
+        c = {0.1};
+      });
+  EXPECT_CALL(env_, GetMaxNumNeighbors);
+  EXPECT_CALL(env_, GetHeuristicCost(0, 1)).WillOnce(Return(0.5));
 
-//   // Iteration
-//   EXPECT_CALL(user_callback_, Call);
-//   EXPECT_CALL(env_, GetHeuristicCost(0, 1)).WillOnce(Return(0.5));
-//   EXPECT_CALL(env_, GetPredecessors(1, _))
-//       .WillOnce([](int, std::vector<int>& p) { p = {0}; });
-//   EXPECT_CALL(env_, GetNeighborsAndCosts(0, _, _))
-//       .WillOnce([](int, std::vector<int>& n, std::vector<float>& c) {
-//         n = {1};
-//         c = {0.1};
-//       });
-//   EXPECT_CALL(env_, GetMaxNumNeighbors);
-//   EXPECT_CALL(env_, GetHeuristicCost(0, 0)).WillOnce(Return(0));
+  // Iteration
+  EXPECT_CALL(user_callback_, Call);
+  EXPECT_CALL(env_, GetHeuristicCost(0, 1)).WillOnce(Return(0.5));
+  EXPECT_CALL(env_, GetPredecessors(1, _))
+      .WillOnce([](int, std::vector<int>& p) { p = {0}; });
+  EXPECT_CALL(env_, GetNeighborsAndCosts(0, _, _))
+      .WillOnce([](int, std::vector<int>& n, std::vector<float>& c) {
+        n = {1};
+        c = {0.1};
+      });
+  EXPECT_CALL(env_, GetMaxNumNeighbors);
+  EXPECT_CALL(env_, GetHeuristicCost(0, 0)).WillOnce(Return(0));
 
-//   // Iteration
-//   EXPECT_CALL(user_callback_, Call);
-//   EXPECT_CALL(env_, GetHeuristicCost(0, 0)).WillOnce(Return(0));
-//   EXPECT_CALL(env_, GetPredecessors(0, _))
-//       .WillOnce([](int, std::vector<int>& p) { p = {}; });
+  // Iteration
+  EXPECT_CALL(user_callback_, Call);
+  EXPECT_CALL(env_, GetHeuristicCost(0, 0)).WillOnce(Return(0));
+  EXPECT_CALL(env_, GetPredecessors(0, _))
+      .WillOnce([](int, std::vector<int>& p) { p = {}; });
 
-//   // Reconstruction
-//   EXPECT_CALL(user_callback_, Call).Times(2);
+  // Reconstruction
+  EXPECT_CALL(user_callback_, Call).Times(2);
 
-//   EXPECT_THAT(planner_->PlanPath(0, 2, user_callback_.AsStdFunction(),
-//               path_), Eq(PlannerStatus::kSuccess));
-//   EXPECT_THAT(path_, Eq(std::vector<int>{0, 1, 2}));
-// }
+  EXPECT_THAT(planner_->PlanPath(0, 2, user_callback_.AsStdFunction(), path_),
+              Eq(PlannerStatus::kSuccess));
+  EXPECT_THAT(path_, Eq(std::vector<int>{0, 1, 2}));
+}
 
-// TEST_F(TestDStarLitePlanner, WhenInfeasibleProblem_ThenPlanPathFails) {
-//   InSequence in_sequence;
+TEST_F(DISABLED_TestDStarLitePlanner, WhenInfeasibleProblem_ThenPlanPathFails) {
+  InSequence in_sequence;
 
-//   SetUpInit();
+  SetUpInit();
 
-//   // Iteration
-//   EXPECT_CALL(user_callback_, Call);
-//   EXPECT_CALL(env_, GetHeuristicCost(0, 2)).WillOnce(Return(2));
-//   EXPECT_CALL(env_, GetPredecessors(2, _))
-//       .WillOnce([](int, std::vector<int>& p) { p = {1}; });
-//   EXPECT_CALL(env_, GetNeighborsAndCosts(1, _, _))
-//       .WillOnce([](int, std::vector<int>& n, std::vector<float>& c) {
-//         n = {2};
-//         c = {0.1};
-//       });
-//   EXPECT_CALL(env_, GetMaxNumNeighbors);
-//   EXPECT_CALL(env_, GetHeuristicCost(0, 1)).WillOnce(Return(0.5));
+  // Iteration
+  EXPECT_CALL(user_callback_, Call);
+  EXPECT_CALL(env_, GetHeuristicCost(0, 2)).WillOnce(Return(2));
+  EXPECT_CALL(env_, GetPredecessors(2, _))
+      .WillOnce([](int, std::vector<int>& p) { p = {1}; });
+  EXPECT_CALL(env_, GetNeighborsAndCosts(1, _, _))
+      .WillOnce([](int, std::vector<int>& n, std::vector<float>& c) {
+        n = {2};
+        c = {0.1};
+      });
+  EXPECT_CALL(env_, GetMaxNumNeighbors);
+  EXPECT_CALL(env_, GetHeuristicCost(0, 1)).WillOnce(Return(0.5));
 
-//   // Iteration
-//   EXPECT_CALL(user_callback_, Call);
-//   EXPECT_CALL(env_, GetHeuristicCost(0, 1)).WillOnce(Return(0.5));
-//   EXPECT_CALL(env_, GetPredecessors(1, _))
-//       .WillOnce([](int, std::vector<int>& p) { p = {0}; });
-//   EXPECT_CALL(env_, GetNeighborsAndCosts(0, _, _))
-//       .WillOnce([](int, std::vector<int>& n, std::vector<float>& c) {
-//         n = {1};
-//         c = {kInfCost};
-//       });
-//   EXPECT_CALL(env_, GetMaxNumNeighbors);
-//   EXPECT_CALL(env_, GetHeuristicCost(0, 0)).WillOnce(Return(0));
+  // Iteration
+  EXPECT_CALL(user_callback_, Call);
+  EXPECT_CALL(env_, GetHeuristicCost(0, 1)).WillOnce(Return(0.5));
+  EXPECT_CALL(env_, GetPredecessors(1, _))
+      .WillOnce([](int, std::vector<int>& p) { p = {0}; });
+  EXPECT_CALL(env_, GetNeighborsAndCosts(0, _, _))
+      .WillOnce([](int, std::vector<int>& n, std::vector<float>& c) {
+        n = {1};
+        c = {kInfCost};
+      });
+  EXPECT_CALL(env_, GetMaxNumNeighbors);
+  EXPECT_CALL(env_, GetHeuristicCost(0, 0)).WillOnce(Return(0));
 
-//   // Iteration
-//   EXPECT_CALL(user_callback_, Call);
-//   EXPECT_CALL(env_, GetHeuristicCost(0, 0)).WillOnce(Return(0));
+  // Iteration
+  EXPECT_CALL(user_callback_, Call);
+  EXPECT_CALL(env_, GetHeuristicCost(0, 0)).WillOnce(Return(0));
 
-//   EXPECT_THAT(planner_->PlanPath(0, 2, user_callback_.AsStdFunction(),
-//               path_), Eq(PlannerStatus::kInfeasibleProblem));
-// }
+  EXPECT_THAT(planner_->PlanPath(0, 2, user_callback_.AsStdFunction(), path_),
+              Eq(PlannerStatus::kInfeasibleProblem));
+}
 
 }  // namespace optimus
