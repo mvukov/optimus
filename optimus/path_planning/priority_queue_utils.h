@@ -79,15 +79,17 @@ class PriorityQueue {
   }
 
   void Remove(int index) {
-    heap_.erase(hash_map_.at(index));
-    hash_map_.erase(index);
+    auto it = hash_map_.find(index);
+    if (it != hash_map_.end()) {
+      heap_.erase(it->second);
+      hash_map_.erase(it);
+    }
   }
 
-  auto HasIndex(int index) const { return hash_map_.count(index) > 0; }
-
   void InsertOrUpdate(int index, Key key) {
-    if (HasIndex(index)) {
-      heap_.update(hash_map_[index], IndexAndKey(index, key));
+    auto it = hash_map_.find(index);
+    if (it != hash_map_.end()) {
+      heap_.update(it->second, IndexAndKey(index, key));
     } else {
       insert(index, key);
     }

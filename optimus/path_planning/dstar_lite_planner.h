@@ -195,7 +195,7 @@ void DStarLitePlanner<E>::UpdateVertex(int pivot) {
 
   if (!AreEqual(g_values_[pivot], rhs_values_[pivot])) {
     open_queue_.InsertOrUpdate(pivot, CalculateKey(pivot));
-  } else if (open_queue_.HasIndex(pivot)) {
+  } else {
     open_queue_.Remove(pivot);
   }
 }
