@@ -15,8 +15,6 @@
 #include <string>
 
 #include "benchmark/benchmark.h"
-
-#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"  // NOLINT
 
 #include "optimus/check.h"
