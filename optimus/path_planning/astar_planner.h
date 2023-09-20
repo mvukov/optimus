@@ -106,7 +106,6 @@ PlannerStatus AStarPlanner<E>::Expand(int goal,
                                       const UserCallback& user_callback) {
   while (!open_queue_.empty()) {
     auto pivot = open_queue_.top();
-    open_queue_.pop();
     const auto pivot_index = pivot.index;
 
     if (pivot_index == goal) {
@@ -117,6 +116,7 @@ PlannerStatus AStarPlanner<E>::Expand(int goal,
       return PlannerStatus::kUserAbort;
     }
 
+    open_queue_.pop();
     closed_indices_[pivot_index] = true;
     this->env_->GetNeighborsAndCosts(pivot_index, neighbors_,
                                      pivot_to_neighbor_costs_);
