@@ -123,22 +123,18 @@ Key DStarLitePlanner<E>::CalculateKey(int index) const {
 template <class E>
 PlannerStatus DStarLitePlanner<E>::CalculateShortestPath(
     const UserCallback& user_callback) {
-  // Each vertex can be expanded at most twice.
-  const auto max_num_iterations = 2 * this->env_->GetStateSpaceSize();
-  auto num_iterations = 0;
   while (!open_queue_.empty() &&
          (open_queue_.top().key < CalculateKey(start_) ||
           !AreEqual(rhs_values_[start_], g_values_[start_]))) {
-    const auto pivot = open_queue_.top();
-    const auto pivot_index = pivot.index;
-
     if (user_callback && !user_callback(UserCallbackEvent::kSearch)) {
       return PlannerStatus::kUserAbort;
     }
 
+    const auto pivot = open_queue_.top();
+    const auto pivot_index = pivot.index;
     const auto new_pivot_key = CalculateKey(pivot_index);
     if (pivot.key < new_pivot_key) {
-      // Avoid pop and do update. pop is for the 2 cases below.
+      // TODO(mvukov) Just update.
       open_queue_.InsertOrUpdate(pivot_index, new_pivot_key);
     } else {
       open_queue_.pop();
@@ -152,10 +148,6 @@ PlannerStatus DStarLitePlanner<E>::CalculateShortestPath(
         UpdateVertex(pivot_index);
         UpdatePredecessors(pivot_index);
       }
-    }
-
-    if (++num_iterations == max_num_iterations) {
-      return PlannerStatus::kInfeasibleProblem;
     }
   }
 

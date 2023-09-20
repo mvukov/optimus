@@ -8,7 +8,7 @@ genrule(
     outs = ["stb_image.c"],
     cmd = """cat > $@ << EOL
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"  // NOLINT
+#include "stb_image.h"
 EOL
 """,
 )
