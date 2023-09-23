@@ -20,8 +20,10 @@ from optimus.path_planning import primitive_generator
 matplotlib.use('QtAgg')
 
 
-def plot_primitives(primitives):
+def plot_primitives(primitives, title=None):
   fig, ax = pyplot.subplots()
+  if title is not None:
+    ax.set_title(title)
   arrow_scale = 0.5
 
   def plot_arrow(x, y, theta):
@@ -66,9 +68,11 @@ def main():
   def primitives_with_start_angle_index(index):
     return [p for p in primitives if p.start_angle_idx == index]
 
-  plot_primitives(primitives_with_start_angle_index(zero_angle_index))
-  plot_primitives(primitives_with_start_angle_index(zero_angle_index + 1))
-  plot_primitives(primitives_with_start_angle_index(zero_angle_index + 2))
+  for offset in range(0, 3):
+    angle_index = zero_angle_index + offset
+    plot_primitives(
+        primitives_with_start_angle_index(angle_index),
+        f'start angle {numpy.rad2deg(angles[angle_index].angle):.2f} deg')
 
   pyplot.show()
 
