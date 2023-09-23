@@ -136,8 +136,7 @@ void SE2Environment::GetNeighborsAndCosts(
       const auto candidate_cost = (*grid_2d_)(candidate_y, candidate_x);
       // TODO(mvukov) Should call IsStateValid here!
       if (candidate_cost > config_.valid_state_threshold) {
-        // TODO(mvukov) cost = kInfCost;
-        discard = true;
+        cost = kInfCost;
         break;
       }
       cost += candidate_cost;
@@ -146,9 +145,11 @@ void SE2Environment::GetNeighborsAndCosts(
       continue;
     }
 
-    cost *= config_.swath_cost_multiplier;
-    cost += config_.length_cost_multiplier * p.length;
-    cost += config_.abs_angle_diff_cost_multiplier * p.abs_angle_diff;
+    if (!AreEqual(cost, kInfCost)) {
+      cost *= config_.swath_cost_multiplier;
+      cost += config_.length_cost_multiplier * p.length;
+      cost += config_.abs_angle_diff_cost_multiplier * p.abs_angle_diff;
+    }
 
     const auto neighbor_index = (((xy_coords.y + p.end_y_idx) * grid_width +
                                   (xy_coords.x + p.end_x_idx))
