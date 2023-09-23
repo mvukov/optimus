@@ -69,9 +69,8 @@ class SE2Environment {
   int GetMaxNumNeighbors() const { return max_num_neighbors_; }
 
   float GetHeuristicCost(int start, int goal) const {
-    // TODO(mvukov) If distance to the goal is closer than a threshold, then we
-    // should also penalize the angle!
-    return GetHypot(start, goal, grid_2d_->cols());
+    return GetHypot(start >> num_angle_bits_, goal >> num_angle_bits_,
+                    grid_2d_->cols());
   }
 
   void GetNeighborsAndCosts(int pivot, std::vector<int>& neighbors,
