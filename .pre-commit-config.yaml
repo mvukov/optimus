@@ -49,7 +49,7 @@ repos:
             --in-place,
           ]
   - repo: https://github.com/asottile/reorder_python_imports
-    rev: v3.11.0
+    rev: v3.12.0
     hooks:
       - id: reorder-python-imports
         args: [--py37-plus]
