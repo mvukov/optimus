@@ -166,6 +166,8 @@ TEST_F(
     TestGrid2DPlannersNewStartAndRaisedObstacle,
     GivenAStarGrid2DPlanner_WhenObstacleRaisedAndNewStart_EnsurePathIsFound) {
   planner_ = std::make_unique<AStarGrid2DPlanner>(env_config_);
+  // A* doesn't support replanning, so, here we just plan from scratch from the
+  // new start and with new (raised) obstacle.
   start_ = new_start_;
   RaiseObstacle();
   PlanPath();
@@ -178,8 +180,11 @@ TEST_F(
     GivenDStarLiteGrid2DPlanner_WhenObstacleRaisedAndNewStart_EnsurePathIsFound) {  // NOLINT
   planner_ = std::make_unique<DStarLiteGrid2DPlanner>(env_config_);
   PlanPath();
+  EXPECT_THAT(GetPathCost(), Eq(kExpectedPathAroundObstacleCost));
   const auto changed_positions = RaiseObstacle();
   ReplanPath(changed_positions);
+  // The point here is that the path cost must be the same as with A* planning
+  // from scratch in the same env.
   EXPECT_THAT(GetPathCost(),
               FloatNear(kExpectedPathAroundRaisedObstacleCost, 5e-6));
   EXPECT_EQ(num_iterations_, 145);
