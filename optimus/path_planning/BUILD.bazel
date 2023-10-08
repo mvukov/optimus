@@ -85,6 +85,7 @@ cc_test(
         "grid_2d_environment_tests.cc",
         "planner_algorithm_tests.cc",
         "planner_environment_mocks.h",
+        "planner_integration_tests.cc",
         "se2_environment_tests.cc",
     ],
     copts = COPTS,
