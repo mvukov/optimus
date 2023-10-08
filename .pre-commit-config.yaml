@@ -23,7 +23,7 @@ repos:
         files: *buildifier_external_files
         args: *buildifier_external_args
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: check-ast
       - id: check-merge-conflict
@@ -49,7 +49,7 @@ repos:
             --in-place,
           ]
   - repo: https://github.com/asottile/reorder_python_imports
-    rev: v3.11.0
+    rev: v3.12.0
     hooks:
       - id: reorder-python-imports
         args: [--py37-plus]
