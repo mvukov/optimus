@@ -51,6 +51,7 @@ class TestGrid2DPlanners : public Test {
 
     EXPECT_THAT(planner_->PlanPath(start_, goal_, callback, path_),
                 Eq(PlannerStatus::kSuccess));
+    EXPECT_TRUE(CheckPath());
   }
 
   auto GetPathCost() const {
@@ -77,6 +78,17 @@ class TestGrid2DPlanners : public Test {
       }
     }
     return changed_positions;
+  }
+
+  bool CheckPath() {
+    for (const auto& p : path_) {
+      const auto x = std::floor(p.x());
+      const auto y = std::floor(p.y());
+      if (grid_data_[y * 50 + x] != 0) {
+        return false;
+      }
+    }
+    return true;
   }
 
   std::vector<Grid2DScalar> grid_data_;
@@ -144,6 +156,7 @@ class TestGrid2DPlannersNewStartAndRaisedObstacle : public TestGrid2DPlanners {
     EXPECT_THAT(
         planner_->ReplanPath(new_start_, changed_positions, callback, path_),
         Eq(PlannerStatus::kSuccess));
+    EXPECT_TRUE(CheckPath());
   }
 
   Position2D new_start_;
