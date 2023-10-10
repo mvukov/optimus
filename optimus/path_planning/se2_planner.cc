@@ -30,7 +30,13 @@ bool SE2PlannerBase::SetGrid2D(const Grid2DMap* grid_2d) {
 
 int SE2PlannerBase::GetStateIndex(const Pose2D& t) const {
   const int x = std::floor(t.x);
+  if (x < 0) {
+    return kInvalidIndex;
+  }
   const int y = std::floor(t.y);
+  if (y < 0) {
+    return kInvalidIndex;
+  }
   const auto angle_index = env_.action_set().GetAngleIndex(t.theta);
   if (angle_index == kInvalidIndex) {
     return kInvalidIndex;
