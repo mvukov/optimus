@@ -8,7 +8,9 @@ load("//repositories:deps.bzl", "optimus_deps")
 
 optimus_deps()
 
-load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
+
+py_repositories()
 
 python_register_toolchains(
     name = "optimus_python",
