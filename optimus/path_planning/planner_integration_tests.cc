@@ -119,7 +119,7 @@ TEST_F(TestGrid2DPlanners,
   planner_ = std::make_unique<AStarGrid2DPlanner>(env_config_);
   PlanPath();
   EXPECT_THAT(GetPathCost(), Eq(kExpectedStraightPathCost));
-  EXPECT_EQ(num_iterations_, 26);
+  EXPECT_THAT(num_iterations_, Eq(26));
 }
 
 TEST_F(TestGrid2DPlanners,
@@ -127,7 +127,7 @@ TEST_F(TestGrid2DPlanners,
   planner_ = std::make_unique<DStarLiteGrid2DPlanner>(env_config_);
   PlanPath();
   EXPECT_THAT(GetPathCost(), Eq(kExpectedStraightPathCost));
-  EXPECT_EQ(num_iterations_, 27);
+  EXPECT_THAT(num_iterations_, Eq(27));
 }
 
 TEST_F(TestGrid2DPlanners,
@@ -136,7 +136,7 @@ TEST_F(TestGrid2DPlanners,
   planner_ = std::make_unique<AStarGrid2DPlanner>(env_config_);
   PlanPath();
   EXPECT_THAT(GetPathCost(), Eq(kExpectedPathAroundObstacleCost));
-  EXPECT_EQ(num_iterations_, 387);
+  EXPECT_THAT(num_iterations_, Eq(387));
 }
 
 TEST_F(TestGrid2DPlanners,
@@ -145,7 +145,7 @@ TEST_F(TestGrid2DPlanners,
   planner_ = std::make_unique<DStarLiteGrid2DPlanner>(env_config_);
   PlanPath();
   EXPECT_THAT(GetPathCost(), Eq(kExpectedPathAroundObstacleCost));
-  EXPECT_EQ(num_iterations_, 377);
+  EXPECT_THAT(num_iterations_, Eq(377));
 }
 
 class TestGrid2DPlannersNewStartAndRaisedObstacle : public TestGrid2DPlanners {
@@ -185,7 +185,7 @@ TEST_F(
   RaiseObstacle();
   PlanPath();
   EXPECT_THAT(GetPathCost(), Eq(kExpectedPathAroundRaisedObstacleCost));
-  EXPECT_EQ(num_iterations_, 349);
+  EXPECT_THAT(num_iterations_, Eq(349));
 }
 
 TEST_F(
@@ -200,7 +200,7 @@ TEST_F(
   // from scratch in the same env.
   EXPECT_THAT(GetPathCost(),
               FloatNear(kExpectedPathAroundRaisedObstacleCost, 5e-6));
-  EXPECT_EQ(num_iterations_, 145);
+  EXPECT_THAT(num_iterations_, Eq(145));
 }
 
 const ActionSet2D& get_test_primitives();  // Auto-generated primitives.
@@ -215,6 +215,11 @@ class TestSE2Planners : public Test, public TestEnvSetup {
   TestSE2Planners() {
     start_ = {12, 25, M_PI_2};
     goal_ = {38, 25, -M_PI_2};
+  }
+
+  template <class P>
+  auto MakePlanner() {
+    return std::make_unique<P>(env_config_, &get_test_primitives());
   }
 
   void PlanPath() {
@@ -260,40 +265,36 @@ class TestSE2Planners : public Test, public TestEnvSetup {
 };
 
 TEST_F(TestSE2Planners, GivenAStarSE2Planner_WhenEmptySpace_EnsurePathIsFound) {
-  planner_ =
-      std::make_unique<AStarSE2Planner>(env_config_, &get_test_primitives());
+  planner_ = MakePlanner<AStarSE2Planner>();
   PlanPath();
   EXPECT_THAT(GetPathCost(), Eq(kExpectedFreeSpacePathCost));
-  EXPECT_EQ(num_iterations_, 321);
+  EXPECT_THAT(num_iterations_, Eq(321));
 }
 
 TEST_F(TestSE2Planners,
        GivenDStarLiteSE2Planner_WhenEmptySpace_EnsurePathIsFound) {
-  planner_ = std::make_unique<DStarLiteSE2Planner>(env_config_,
-                                                   &get_test_primitives());
+  planner_ = MakePlanner<DStarLiteSE2Planner>();
   PlanPath();
   EXPECT_THAT(GetPathCost(), Eq(kExpectedFreeSpacePathCost));
-  EXPECT_EQ(num_iterations_, 322);
+  EXPECT_THAT(num_iterations_, Eq(322));
 }
 
 TEST_F(TestSE2Planners,
        GivenAStarSE2Planner_WhenObstaclePresent_EnsurePathIsFound) {
   MakeObstacle();
-  planner_ =
-      std::make_unique<AStarSE2Planner>(env_config_, &get_test_primitives());
+  planner_ = MakePlanner<AStarSE2Planner>();
   PlanPath();
   EXPECT_THAT(GetPathCost(), Eq(kExpectedPathAroundObstacleCost));
-  EXPECT_EQ(num_iterations_, 867);
+  EXPECT_THAT(num_iterations_, Eq(867));
 }
 
 TEST_F(TestSE2Planners,
        GivenDStarLiteSE2Planner_WhenObstaclePresent_EnsurePathIsFound) {
   MakeObstacle();
-  planner_ = std::make_unique<DStarLiteSE2Planner>(env_config_,
-                                                   &get_test_primitives());
+  planner_ = MakePlanner<DStarLiteSE2Planner>();
   PlanPath();
   EXPECT_THAT(GetPathCost(), FloatNear(kExpectedPathAroundObstacleCost, 5e-6));
-  EXPECT_EQ(num_iterations_, 742);
+  EXPECT_THAT(num_iterations_, Eq(742));
 }
 
 }  // namespace optimus
