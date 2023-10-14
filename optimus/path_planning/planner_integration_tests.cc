@@ -32,39 +32,11 @@ using ::testing::Eq;
 using ::testing::FloatNear;
 using ::testing::Test;
 
-class TestGrid2DPlanners : public Test {
+class TestEnvSetup {
  public:
-  static constexpr float kExpectedStraightPathCost = 26;
-  static constexpr float kExpectedPathAroundObstacleCost = 37.3553391;
-
-  TestGrid2DPlanners() {
+  TestEnvSetup() {
     grid_data_.resize(50 * 50, 0);
     grid_map_ = std::make_unique<Grid2DMap>(grid_data_.data(), 50, 50);
-    start_ = {12, 25};
-    goal_ = {38, 25};
-  }
-
-  void PlanPath() {
-    EXPECT_TRUE(planner_->SetGrid2D(grid_map_.get()));
-
-    num_iterations_ = 0;
-    auto callback = [this](UserCallbackEvent event) {
-      if (event == UserCallbackEvent::kSearch) {
-        ++num_iterations_;
-      }
-      return true;
-    };
-
-    EXPECT_THAT(planner_->PlanPath(start_, goal_, callback, path_),
-                Eq(PlannerStatus::kSuccess));
-    EXPECT_TRUE(CheckPath());
-  }
-
-  auto GetPathCost() const {
-    if (const auto path_cost = planner_->GetPathCost(); path_cost) {
-      return *path_cost;
-    }
-    return kInfCost;
   }
 
   void MakeObstacle() {
@@ -86,6 +58,43 @@ class TestGrid2DPlanners : public Test {
     return changed_positions;
   }
 
+  std::vector<Grid2DScalar> grid_data_;
+  std::unique_ptr<Grid2DMap> grid_map_;
+};
+
+class TestGrid2DPlanners : public Test, public TestEnvSetup {
+ public:
+  static constexpr float kExpectedStraightPathCost = 26;
+  static constexpr float kExpectedPathAroundObstacleCost = 37.3553391;
+
+  TestGrid2DPlanners() {
+    start_ = {12, 25};
+    goal_ = {38, 25};
+  }
+
+  auto GetPathCost() const {
+    if (const auto path_cost = planner_->GetPathCost(); path_cost) {
+      return *path_cost;
+    }
+    return kInfCost;
+  }
+
+  void PlanPath() {
+    EXPECT_TRUE(planner_->SetGrid2D(grid_map_.get()));
+
+    num_iterations_ = 0;
+    auto callback = [this](UserCallbackEvent event) {
+      if (event == UserCallbackEvent::kSearch) {
+        ++num_iterations_;
+      }
+      return true;
+    };
+
+    EXPECT_THAT(planner_->PlanPath(start_, goal_, callback, path_),
+                Eq(PlannerStatus::kSuccess));
+    EXPECT_TRUE(CheckPath());
+  }
+
   bool CheckPath() {
     for (const auto& p : path_) {
       const auto x = std::floor(p.x());
@@ -97,8 +106,6 @@ class TestGrid2DPlanners : public Test {
     return true;
   }
 
-  std::vector<Grid2DScalar> grid_data_;
-  std::unique_ptr<Grid2DMap> grid_map_;
   Grid2DEnvironment::Config env_config_;
   std::unique_ptr<Grid2DPlannerBase> planner_;
   Position2D start_;
@@ -198,7 +205,7 @@ TEST_F(
 
 const ActionSet2D& get_test_primitives();  // Auto-generated primitives.
 
-class TestSE2Planners : public Test {
+class TestSE2Planners : public Test, public TestEnvSetup {
  public:
   static constexpr float kExpectedFreeSpacePathCost = 29.3049507;
   static constexpr float kExpectedPathAroundObstacleCost = 37.5892181;
@@ -206,8 +213,6 @@ class TestSE2Planners : public Test {
   using Pose2D = SE2PlannerBase::Pose2D;
 
   TestSE2Planners() {
-    grid_data_.resize(50 * 50, 0);
-    grid_map_ = std::make_unique<Grid2DMap>(grid_data_.data(), 50, 50);
     start_ = {12, 25, M_PI_2};
     goal_ = {38, 25, -M_PI_2};
   }
@@ -235,25 +240,6 @@ class TestSE2Planners : public Test {
     return kInfCost;
   }
 
-  void MakeObstacle() {
-    for (int x = 25; x < 27; ++x) {
-      for (int y = 0; y < 38; ++y) {
-        grid_data_[y * 50 + x] = 1;
-      }
-    }
-  }
-
-  std::vector<Position2D> RaiseObstacle() {
-    std::vector<Position2D> changed_positions;
-    for (int x = 25; x < 27; ++x) {
-      for (int y = 38; y < 40; ++y) {
-        grid_data_[y * 50 + x] = 1;
-        changed_positions.emplace_back(x, y);
-      }
-    }
-    return changed_positions;
-  }
-
   bool CheckPath() {
     for (const auto& p : path_) {
       const auto x = std::floor(p.x);
@@ -265,8 +251,6 @@ class TestSE2Planners : public Test {
     return true;
   }
 
-  std::vector<Grid2DScalar> grid_data_;
-  std::unique_ptr<Grid2DMap> grid_map_;
   SE2Environment::Config env_config_;
   std::unique_ptr<SE2PlannerBase> planner_;
   Pose2D start_;
