@@ -34,15 +34,18 @@ using ::testing::Test;
 
 class TestEnvSetup {
  public:
+  static constexpr int kGridWidth = 50;
+
   TestEnvSetup() {
-    grid_data_.resize(50 * 50, 0);
-    grid_map_ = std::make_unique<Grid2DMap>(grid_data_.data(), 50, 50);
+    grid_data_.resize(kGridWidth * kGridWidth, 0);
+    grid_map_ =
+        std::make_unique<Grid2DMap>(grid_data_.data(), kGridWidth, kGridWidth);
   }
 
   void MakeObstacle() {
     for (int x = 25; x < 27; ++x) {
       for (int y = 0; y < 38; ++y) {
-        grid_data_[y * 50 + x] = 1;
+        grid_data_[y * kGridWidth + x] = 1;
       }
     }
   }
@@ -51,7 +54,7 @@ class TestEnvSetup {
     std::vector<Position2D> changed_positions;
     for (int x = 25; x < 27; ++x) {
       for (int y = 38; y < 40; ++y) {
-        grid_data_[y * 50 + x] = 1;
+        grid_data_[y * kGridWidth + x] = 1;
         changed_positions.emplace_back(x, y);
       }
     }
@@ -99,7 +102,7 @@ class TestGrid2DPlanners : public Test, public TestEnvSetup {
     for (const auto& p : path_) {
       const auto x = std::floor(p.x());
       const auto y = std::floor(p.y());
-      if (grid_data_[y * 50 + x] != 0) {
+      if (grid_data_[y * kGridWidth + x] != 0) {
         return false;
       }
     }
@@ -249,7 +252,7 @@ class TestSE2Planners : public Test, public TestEnvSetup {
     for (const auto& p : path_) {
       const auto x = std::floor(p.x);
       const auto y = std::floor(p.y);
-      if (grid_data_[y * 50 + x] != 0) {
+      if (grid_data_[y * kGridWidth + x] != 0) {
         return false;
       }
     }
