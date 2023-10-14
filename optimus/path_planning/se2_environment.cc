@@ -124,7 +124,8 @@ void SE2Environment::GetNeighborsAndCosts(
 
     bool discard = false;
     const auto swath_size = p.swath_x.size();
-    float cost = 0;
+    constexpr int kSwathInfCost = std::numeric_limits<int>::max();
+    int swath_cost = 0;
     for (size_t el = 0; el < swath_size; ++el) {
       const auto candidate_x = xy_coords.x + p.swath_x[el];
       const auto candidate_y = xy_coords.y + p.swath_y[el];
@@ -136,17 +137,18 @@ void SE2Environment::GetNeighborsAndCosts(
       const auto candidate_cost = (*grid_2d_)(candidate_y, candidate_x);
       // TODO(mvukov) Should call IsStateValid here!
       if (candidate_cost > config_.valid_state_threshold) {
-        cost = kInfCost;
+        swath_cost = kSwathInfCost;
         break;
       }
-      cost += candidate_cost;
+      swath_cost += candidate_cost;
     }
     if (discard) {
       continue;
     }
 
-    if (!AreEqual(cost, kInfCost)) {
-      cost *= config_.swath_cost_multiplier;
+    float cost = kInfCost;
+    if (swath_cost != kSwathInfCost) {
+      cost = config_.swath_cost_multiplier * swath_cost;
       cost += config_.length_cost_multiplier * p.length;
       cost += config_.abs_angle_diff_cost_multiplier * p.abs_angle_diff;
     }

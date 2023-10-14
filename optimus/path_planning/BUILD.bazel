@@ -87,12 +87,26 @@ cc_test(
         "planner_environment_mocks.h",
         "planner_integration_tests.cc",
         "se2_environment_tests.cc",
+        ":test_primitives",
     ],
     copts = COPTS,
     deps = [
         ":path_planning",
         "@com_google_googletest//:gtest_main",
     ],
+)
+
+genrule(
+    name = "test_primitives",
+    outs = ["test_primitives.cc"],
+    cmd = " ".join([
+        "$(location :primitive_exporter)",
+        "--grid_connectivity=8",
+        "--max_angle_idx_diff=1",
+        "--min_radius_grid=0.9",
+        "--output=$@",
+    ]),
+    tools = [":primitive_exporter"],
 )
 
 py_pytest_test(

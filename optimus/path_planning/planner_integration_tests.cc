@@ -17,8 +17,14 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+#include "optimus/path_planning/action_set_2d.h"
 #include "optimus/path_planning/astar_grid_2d_planner.h"
+#include "optimus/path_planning/astar_se2_planner.h"
 #include "optimus/path_planning/dstar_lite_grid_2d_planner.h"
+#include "optimus/path_planning/dstar_lite_se2_planner.h"
+#include "optimus/path_planning/grid_2d_environment.h"
+#include "optimus/path_planning/se2_environment.h"
+#include "optimus/path_planning/se2_planner.h"
 
 namespace optimus {
 
@@ -188,6 +194,122 @@ TEST_F(
   EXPECT_THAT(GetPathCost(),
               FloatNear(kExpectedPathAroundRaisedObstacleCost, 5e-6));
   EXPECT_EQ(num_iterations_, 145);
+}
+
+const ActionSet2D& get_test_primitives();  // Auto-generated primitives.
+
+class TestSE2Planners : public Test {
+ public:
+  static constexpr float kExpectedFreeSpacePathCost = 29.3049507;
+  static constexpr float kExpectedPathAroundObstacleCost = 37.5892181;
+
+  using Pose2D = SE2PlannerBase::Pose2D;
+
+  TestSE2Planners() {
+    grid_data_.resize(50 * 50, 0);
+    grid_map_ = std::make_unique<Grid2DMap>(grid_data_.data(), 50, 50);
+    start_ = {12, 25, M_PI_2};
+    goal_ = {38, 25, -M_PI_2};
+  }
+
+  void PlanPath() {
+    EXPECT_TRUE(planner_->SetGrid2D(grid_map_.get()));
+
+    num_iterations_ = 0;
+    auto callback = [this](UserCallbackEvent event) {
+      if (event == UserCallbackEvent::kSearch) {
+        ++num_iterations_;
+      }
+      return true;
+    };
+
+    EXPECT_THAT(planner_->PlanPath(start_, goal_, callback, path_),
+                Eq(PlannerStatus::kSuccess));
+    EXPECT_TRUE(CheckPath());
+  }
+
+  auto GetPathCost() const {
+    if (const auto path_cost = planner_->GetPathCost(); path_cost) {
+      return *path_cost;
+    }
+    return kInfCost;
+  }
+
+  void MakeObstacle() {
+    for (int x = 25; x < 27; ++x) {
+      for (int y = 0; y < 38; ++y) {
+        grid_data_[y * 50 + x] = 1;
+      }
+    }
+  }
+
+  std::vector<Position2D> RaiseObstacle() {
+    std::vector<Position2D> changed_positions;
+    for (int x = 25; x < 27; ++x) {
+      for (int y = 38; y < 40; ++y) {
+        grid_data_[y * 50 + x] = 1;
+        changed_positions.emplace_back(x, y);
+      }
+    }
+    return changed_positions;
+  }
+
+  bool CheckPath() {
+    for (const auto& p : path_) {
+      const auto x = std::floor(p.x);
+      const auto y = std::floor(p.y);
+      if (grid_data_[y * 50 + x] != 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  std::vector<Grid2DScalar> grid_data_;
+  std::unique_ptr<Grid2DMap> grid_map_;
+  SE2Environment::Config env_config_;
+  std::unique_ptr<SE2PlannerBase> planner_;
+  Pose2D start_;
+  Pose2D goal_;
+  std::vector<Pose2D> path_;
+  int num_iterations_ = 0;
+};
+
+TEST_F(TestSE2Planners, GivenAStarSE2Planner_WhenEmptySpace_EnsurePathIsFound) {
+  planner_ =
+      std::make_unique<AStarSE2Planner>(env_config_, &get_test_primitives());
+  PlanPath();
+  EXPECT_THAT(GetPathCost(), Eq(kExpectedFreeSpacePathCost));
+  EXPECT_EQ(num_iterations_, 321);
+}
+
+TEST_F(TestSE2Planners,
+       GivenDStarLiteSE2Planner_WhenEmptySpace_EnsurePathIsFound) {
+  planner_ = std::make_unique<DStarLiteSE2Planner>(env_config_,
+                                                   &get_test_primitives());
+  PlanPath();
+  EXPECT_THAT(GetPathCost(), Eq(kExpectedFreeSpacePathCost));
+  EXPECT_EQ(num_iterations_, 322);
+}
+
+TEST_F(TestSE2Planners,
+       GivenAStarSE2Planner_WhenObstaclePresent_EnsurePathIsFound) {
+  MakeObstacle();
+  planner_ =
+      std::make_unique<AStarSE2Planner>(env_config_, &get_test_primitives());
+  PlanPath();
+  EXPECT_THAT(GetPathCost(), Eq(kExpectedPathAroundObstacleCost));
+  EXPECT_EQ(num_iterations_, 867);
+}
+
+TEST_F(TestSE2Planners,
+       GivenDStarLiteSE2Planner_WhenObstaclePresent_EnsurePathIsFound) {
+  MakeObstacle();
+  planner_ = std::make_unique<DStarLiteSE2Planner>(env_config_,
+                                                   &get_test_primitives());
+  PlanPath();
+  EXPECT_THAT(GetPathCost(), FloatNear(kExpectedPathAroundObstacleCost, 5e-6));
+  EXPECT_EQ(num_iterations_, 742);
 }
 
 }  // namespace optimus
