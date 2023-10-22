@@ -39,7 +39,6 @@ PlannerStatus DStarLiteGrid2DPlanner::ReplanPath(
     const Position2D& start, const std::vector<Position2D>& changed_positions,
     const UserCallback& user_callback, std::vector<Position2D>& path) {
   start_index_.reset();
-  const auto start_index = GetStateIndex(start);
 
   std::unordered_set<int> states_to_update;
   std::vector<int> predecessors(env_.GetMaxNumPredecessors(), kInvalidIndex);
@@ -52,6 +51,7 @@ PlannerStatus DStarLiteGrid2DPlanner::ReplanPath(
     states_to_update.insert(predecessors.begin(), predecessors.end());
   }
 
+  const auto start_index = GetStateIndex(start);
   std::vector<int> path_indices;  // TODO(mvukov) Make this a member variable?
   if (auto status = algorithm_.ReplanPath(start_index, states_to_update,
                                           user_callback, path_indices);

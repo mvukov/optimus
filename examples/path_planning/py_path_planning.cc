@@ -97,6 +97,30 @@ class ExampleSE2Planner : public PyPlanner<ExampleSE2Planner<Planner>> {
     return path;
   }
 
+  std::vector<Pose2D> ReplanPath(
+      const Pose2D& start, const std::vector<Position2D>& changed_positions) {
+    std::vector<Pose2D> path;
+    planning_time_ = 0;
+    num_expansions_ = 0;
+    auto callback = [this](UserCallbackEvent event) {
+      if (event == UserCallbackEvent::kSearch) {
+        ++num_expansions_;
+      }
+      return true;
+    };
+    const auto start_timestamp = std::chrono::steady_clock::now();
+    if (auto status =
+            planner_.ReplanPath(start, changed_positions, callback, path);
+        status != PlannerStatus::kSuccess) {
+      throw std::runtime_error("Failed to replan a path! Reason: " +
+                               ToString(status));
+    }
+    planning_time_ = std::chrono::duration<double>(
+                         std::chrono::steady_clock::now() - start_timestamp)
+                         .count();
+    return path;
+  }
+
   auto planning_time() const { return planning_time_; }
   auto num_expansions() const { return num_expansions_; }
   auto path_cost() const { return planner_.GetPathCost(); }
@@ -201,6 +225,7 @@ PYBIND11_MODULE(py_path_planning, m) {
   py::class_<ExampleAStarSE2Planner>(m, "ExampleAStarSE2Planner")
       .def(py::init<const SE2Environment::Config&>(), py::arg("config"))
       .def("plan_path", &ExampleAStarSE2Planner::PyPlanPath)
+      .def("replan_path", &ExampleAStarSE2Planner::ReplanPath)
       .def("set_grid_2d", &ExampleAStarSE2Planner::SetGrid2D)
       .def_property_readonly("planning_time",
                              &ExampleAStarSE2Planner::planning_time)
@@ -211,6 +236,7 @@ PYBIND11_MODULE(py_path_planning, m) {
   py::class_<ExampleDStarLiteSE2Planner>(m, "ExampleDStarLiteSE2Planner")
       .def(py::init<const SE2Environment::Config&>(), py::arg("config"))
       .def("plan_path", &ExampleDStarLiteSE2Planner::PyPlanPath)
+      .def("replan_path", &ExampleDStarLiteSE2Planner::ReplanPath)
       .def("set_grid_2d", &ExampleDStarLiteSE2Planner::SetGrid2D)
       .def_property_readonly("planning_time",
                              &ExampleDStarLiteSE2Planner::planning_time)

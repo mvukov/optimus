@@ -32,6 +32,14 @@ std::optional<float> AStarSE2Planner::GetPathCost() const {
   return algorithm_.GetGValue(*goal_index_);
 }
 
+template <>
+PlannerStatus AStarSE2Planner::ReplanPath(const Pose2D&,
+                                          const std::vector<Position2D>&,
+                                          const UserCallback&,
+                                          std::vector<Pose2D>&) {
+  return PlannerStatus::kNotImplemented;
+}
+
 }  // namespace optimus
 
 #endif  // OPTIMUS_PATH_PLANNING_ASTAR_SE2_PLANNER_H_

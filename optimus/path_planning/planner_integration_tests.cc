@@ -300,4 +300,58 @@ TEST_F(TestSE2Planners,
   EXPECT_THAT(num_iterations_, Eq(742));
 }
 
+class TestSE2PlannersNewStartAndRaisedObstacle : public TestSE2Planners {
+ public:
+  static constexpr float kExpectedPathAroundRaisedObstacleCost = 35.2602234;
+
+  TestSE2PlannersNewStartAndRaisedObstacle() {
+    MakeObstacle();
+    new_start_ = {15, 30, M_PI_2 / 2.0};
+  }
+
+  void ReplanPath(const std::vector<Position2D>& changed_positions) {
+    num_iterations_ = 0;
+    auto callback = [this](UserCallbackEvent event) {
+      if (event == UserCallbackEvent::kSearch) {
+        ++num_iterations_;
+      }
+      return true;
+    };
+
+    EXPECT_THAT(
+        planner_->ReplanPath(new_start_, changed_positions, callback, path_),
+        Eq(PlannerStatus::kSuccess));
+    EXPECT_TRUE(CheckPath());
+  }
+
+  Pose2D new_start_;
+};
+
+TEST_F(TestSE2PlannersNewStartAndRaisedObstacle,
+       GivenAStarSE2Planner_WhenObstacleRaisedAndNewStart_EnsurePathIsFound) {
+  planner_ = MakePlanner<AStarSE2Planner>();
+  // A* doesn't support replanning, so, here we just plan from scratch from the
+  // new start and with new (raised) obstacle.
+  start_ = new_start_;
+  RaiseObstacle();
+  PlanPath();
+  EXPECT_THAT(GetPathCost(), Eq(kExpectedPathAroundRaisedObstacleCost));
+  EXPECT_THAT(num_iterations_, Eq(652));
+}
+
+TEST_F(
+    TestSE2PlannersNewStartAndRaisedObstacle,
+    GivenDStarLiteSE2Planner_WhenObstacleRaisedAndNewStart_EnsurePathIsFound) {  // NOLINT
+  planner_ = MakePlanner<DStarLiteSE2Planner>();
+  PlanPath();
+  EXPECT_THAT(GetPathCost(), FloatNear(kExpectedPathAroundObstacleCost, 5e-6));
+  const auto changed_positions = RaiseObstacle();
+  ReplanPath(changed_positions);
+  // The point here is that the path cost must be the same as with A* planning
+  // from scratch in the same env.
+  EXPECT_THAT(GetPathCost(),
+              FloatNear(kExpectedPathAroundRaisedObstacleCost, 5e-6));
+  EXPECT_THAT(num_iterations_, Eq(522));
+}
+
 }  // namespace optimus

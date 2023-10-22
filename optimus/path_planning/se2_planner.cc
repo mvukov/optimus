@@ -41,8 +41,12 @@ int SE2PlannerBase::GetStateIndex(const Pose2D& t) const {
   if (angle_index == kInvalidIndex) {
     return kInvalidIndex;
   }
-  return ((y * env_.grid_2d()->cols() + x) << env_.num_angle_bits()) +
-         angle_index;
+  return GetStateIndex(x, y, angle_index);
+}
+
+int SE2PlannerBase::GetStateIndex(int x_idx, int y_idx, int angle_idx) const {
+  return ((y_idx * env_.grid_2d()->cols() + x_idx) << env_.num_angle_bits()) +
+         angle_idx;
 }
 
 PlannerStatus SE2PlannerBase::ReconstructPath(

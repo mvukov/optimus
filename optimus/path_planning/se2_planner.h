@@ -42,10 +42,15 @@ class SE2PlannerBase {
                                  const UserCallback& user_callback,
                                  std::vector<Pose2D>& path) = 0;
 
+  virtual PlannerStatus ReplanPath(
+      const Pose2D& start, const std::vector<Position2D>& changed_positions,
+      const UserCallback& user_callback, std::vector<Pose2D>& path) = 0;
+
   virtual std::optional<float> GetPathCost() const = 0;
 
  protected:
   int GetStateIndex(const Pose2D& t) const;
+  int GetStateIndex(int x_idx, int y_idx, int angle_idx) const;
   PlannerStatus ReconstructPath(const std::vector<int>& path_indices,
                                 std::vector<Pose2D>& path) const;
 
@@ -64,6 +69,11 @@ class SE2Planner final : public SE2PlannerBase {
   PlannerStatus PlanPath(const Pose2D& start, const Pose2D& goal,
                          const UserCallback& user_callback,
                          std::vector<Pose2D>& path) final;
+
+  PlannerStatus ReplanPath(const Pose2D& start,
+                           const std::vector<Position2D>& changed_positions,
+                           const UserCallback& user_callback,
+                           std::vector<Pose2D>& path) final;
 
   std::optional<float> GetPathCost() const final;
 
