@@ -1,4 +1,4 @@
-casadi==3.5.4
+casadi
 coverage
 matplotlib
 numpy
