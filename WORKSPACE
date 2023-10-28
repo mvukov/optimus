@@ -14,7 +14,7 @@ py_repositories()
 
 python_register_toolchains(
     name = "optimus_python",
-    python_version = "3.8.13",
+    python_version = "3.10",
 )
 
 load("@optimus_python//:defs.bzl", python_interpreter_target = "interpreter")
