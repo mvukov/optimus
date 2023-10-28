@@ -1,0 +1,17 @@
+{
+  "configurations": [
+    {
+      "cStandard": "c17",
+      "compileCommands": "compile_commands.json",
+      "compilerPath": "/usr/bin/gcc",
+      "cppStandard": "c++17",
+      "defines": [],
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "intelliSenseMode": "linux-gcc-x64",
+      "name": "Linux"
+    }
+  ],
+  "version": 4
+}

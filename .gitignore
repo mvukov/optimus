@@ -1,6 +1,5 @@
 /bazel-*
 __pycache__
-*.json
 .clwb
 user.bazelrc
 *.data
