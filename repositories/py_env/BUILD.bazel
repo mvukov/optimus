@@ -1,0 +1,4 @@
+load("@optimus_pip_deps//:requirements.bzl", "all_requirements")
+load("//repositories/py_env:py_env.bzl", "py_env")
+
+py_env(deps = all_requirements)

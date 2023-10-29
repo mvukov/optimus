@@ -4,6 +4,7 @@ __pycache__
 user.bazelrc
 *.data
 *.data.old
+.env
 
 /compile_commands.json
 /external
