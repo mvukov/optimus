@@ -64,7 +64,7 @@ def replan_path(planner, start, changed_positions):
   path = []
   try:
     path = planner.replan_path(start, changed_positions)
-    print(f'Planning time: {planner.planning_time:.3f} seconds')
+    print(f'Replanning time: {planner.planning_time:.3f} seconds')
     print(f'Number of expansions: {planner.num_expansions}')
     print(f'Path cost: {planner.path_cost:.3f}')
 

@@ -53,7 +53,7 @@ def plot_results(path: numpy.ndarray, ax: matplotlib.axes.Axes,
   ax.set_title(title)
 
 
-def run_planner(planner, obstacle_data, start, goal):
+def plan_path(planner, obstacle_data, start, goal):
   path = []
   try:
     planner.set_grid_2d(obstacle_data)
@@ -67,8 +67,22 @@ def run_planner(planner, obstacle_data, start, goal):
   return path
 
 
+def replan_path(planner, start, changed_positions):
+  path = []
+  try:
+    path = planner.replan_path(start, changed_positions)
+    print(f'Replanning time: {planner.planning_time:.3f} seconds')
+    print(f'Number of expansions: {planner.num_expansions}')
+    print(f'Path cost: {planner.path_cost:.3f}')
+
+  except RuntimeError as ex:
+    print(ex)
+  return path
+
+
 def main():
   obstacle_data = utils.load_obstacle_data()
+  original_obstacle_data = numpy.copy(obstacle_data)
 
   env_config = py_path_planning.SE2Environment.Config()
   env_config.valid_state_threshold = 15
@@ -76,21 +90,55 @@ def main():
   start = Pose2D(127, 28, numpy.pi / 2)
   goal = Pose2D(146, 436, numpy.pi / 2)
 
+  print('Planning')
   astar_planner = py_path_planning.ExampleAStarSE2Planner(env_config)
   print('Running A*')
-  astar_path = run_planner(astar_planner, obstacle_data, start, goal)
+  astar_path = plan_path(astar_planner, obstacle_data, start, goal)
 
   dstar_lite_planner = py_path_planning.ExampleDStarLiteSE2Planner(env_config)
   print('Running D*Lite')
-  dstar_lite_path = run_planner(dstar_lite_planner, obstacle_data, start, goal)
+  dstar_lite_path = plan_path(dstar_lite_planner, obstacle_data, start, goal)
 
-  _, (ax1, ax2) = pyplot.subplots(1, 2, sharex=True, sharey=True)
-  plot_results(astar_path, ax1, obstacle_data, color_map='Greys', title='A*')
+  print('\n\nReplanning')
+  # Simulate a moving robot: move a robot to a point approx. on the previously
+  # found path.
+  new_start = Pose2D(185, 192, numpy.pi / 4)
+
+  # Add an additional obstacle.
+  changed_positions = []
+  for x in range(235, 245):
+    for y in range(405, 415):
+      obstacle_data[y, x] = 255
+      changed_positions.append([x, y])
+
+  print('Running A*')
+  # A* has no replanning capability, therefore we plan from scratch.
+  new_astar_path = plan_path(astar_planner, obstacle_data, new_start, goal)
+  print('Running D*Lite')
+  new_dstar_lite_path = replan_path(dstar_lite_planner, new_start,
+                                    changed_positions)
+
+  _, ((ax1, ax2), (ax3, ax4)) = pyplot.subplots(2, 2, sharex=True, sharey=True)
+  plot_results(astar_path,
+               ax1,
+               original_obstacle_data,
+               color_map='Greys',
+               title='A*')
   plot_results(dstar_lite_path,
                ax2,
-               obstacle_data,
+               original_obstacle_data,
                color_map='Greys',
                title='D*Lite')
+  plot_results(new_astar_path,
+               ax3,
+               obstacle_data,
+               color_map='Greys',
+               title='Plan A*')
+  plot_results(new_dstar_lite_path,
+               ax4,
+               obstacle_data,
+               color_map='Greys',
+               title='Replan D*Lite')
 
   pyplot.show()
 
