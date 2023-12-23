@@ -1,8 +1,5 @@
 # See e.g. https://blog.aspect.dev/bazelrc-flags
 
-# This is a tmp fix, needed for @boost.
-build --noincompatible_use_platforms_repo_for_constraints
-
 # Fix the wrong default to generate __init__.py to delimit a Python package.
 build --incompatible_default_to_explicit_init_py
 
