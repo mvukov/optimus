@@ -32,17 +32,17 @@ def optimus_repositories():
     maybe(
         http_archive,
         name = "com_github_nelhage_rules_boost",
-        sha256 = "be03cd95742dda5d11c7323e8bc1da5b495d4e32e5711eaddb10d1b69d2e9f6f",
-        strip_prefix = "rules_boost-02cb92c18501809e5ee11bf9c55a39dd9652ecc0",
-        urls = ["https://github.com/nelhage/rules_boost/archive/02cb92c18501809e5ee11bf9c55a39dd9652ecc0.zip"],
+        sha256 = "3b1dc4236693270848900a8feb05a5956097792a388f14cb137643cb9947343e",
+        strip_prefix = "rules_boost-ee7089babcaaacc30ead0f387ce43c94c716685c",
+        urls = ["https://github.com/nelhage/rules_boost/archive/ee7089babcaaacc30ead0f387ce43c94c716685c.zip"],
     )
 
     maybe(
         http_archive,
         name = "rules_python",
-        sha256 = "e85ae30de33625a63eca7fc40a94fea845e641888e52f32b6beea91e8b1b2793",
-        strip_prefix = "rules_python-0.27.1",
-        url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.27.1.tar.gz",
+        sha256 = "d70cd72a7a4880f0000a6346253414825c19cdd40a28289bdf67b8e6480edff8",
+        strip_prefix = "rules_python-0.28.0",
+        url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.28.0.tar.gz",
     )
 
     maybe(
