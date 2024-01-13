@@ -11,13 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import matplotlib
 import numpy
+import PySide6  # noqa Force matplotlib to use qt backend.
 from matplotlib import pyplot
 
 from optimus.path_planning import primitive_generator
-
-matplotlib.use('QtAgg')
 
 
 def plot_primitives(primitives, title=None):

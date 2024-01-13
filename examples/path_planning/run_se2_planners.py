@@ -13,12 +13,11 @@
 # limitations under the License.
 import matplotlib
 import numpy
+import PySide6  # noqa Force matplotlib to use qt backend.
 from matplotlib import pyplot
 
 from examples.path_planning import py_path_planning
 from examples.path_planning import utils
-
-matplotlib.use('QtAgg')
 
 Pose2D = py_path_planning.Pose2D
 
