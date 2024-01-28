@@ -59,8 +59,7 @@ py_binary(
     srcs = ["visualize_primitives.py"],
     deps = [
         "//optimus/path_planning:primitive_generator",
-        requirement("matplotlib"),
-        requirement("PySide6"),
+        requirement("plotly"),
     ],
 )
 

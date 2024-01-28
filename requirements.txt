@@ -2,7 +2,7 @@ casadi
 coverage
 matplotlib
 numpy
+plotly
 PySide6
 pytest
 pytest-cov
-scikit-fmm

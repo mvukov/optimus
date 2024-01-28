@@ -12,37 +12,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import numpy
-import PySide6  # noqa Force matplotlib to use qt backend.
-from matplotlib import pyplot
+import plotly.graph_objects as go
 
 from optimus.path_planning import primitive_generator
 
 
-def plot_primitives(primitives, title=None):
-  fig, ax = pyplot.subplots()
+def plot_primitives(primitives: primitive_generator.MotionPrimitiveExt,
+                    title: str | None = None):
+  fig = go.Figure()
   if title is not None:
-    ax.set_title(title)
-  arrow_scale = 0.5
+    fig.layout.title = title
 
   def plot_arrow(x, y, theta):
-    pyplot.arrow(x,
-                 y,
-                 arrow_scale * numpy.cos(theta),
-                 arrow_scale * numpy.sin(theta),
-                 width=0.01)
+    arrow_scale = 0.5
+    fig.add_scatter(x=[x, x + arrow_scale * numpy.cos(theta)],
+                    y=[y, y + arrow_scale * numpy.sin(theta)],
+                    marker=dict(symbol='arrow',
+                                size=10,
+                                angleref='previous',
+                                color='black'),
+                    showlegend=False)
 
   for primitive in primitives:
-    ax.plot(primitive.x, primitive.y)
+    fig.add_scatter(x=primitive.x,
+                    y=primitive.y,
+                    mode='lines',
+                    showlegend=False)
 
   for primitive in primitives:
     plot_arrow(primitive.x[-1], primitive.y[-1], primitive.theta[-1])
 
-  ax.grid()
-  ax.xaxis.set_major_locator(pyplot.MultipleLocator(1))
-  ax.yaxis.set_major_locator(pyplot.MultipleLocator(1))
-  ax.set_xlabel('x')
-  ax.set_ylabel('y')
-  ax.axis('equal')
+  fig.layout.xaxis.dtick = 1
+  fig.layout.yaxis.dtick = 1
+  fig.layout.xaxis.title = 'x'
+  fig.layout.yaxis.title = 'y'
+  fig.layout.yaxis.scaleanchor = 'x'
+  fig.show()
 
 
 def main():
@@ -53,7 +58,7 @@ def main():
       angles_and_min_coords=angles, min_radius_grid=4.95, max_angle_idx_diff=2)
   print(f'Num motion primitives: {len(primitives)}')
 
-  plot_primitives(primitives)
+  plot_primitives(primitives, 'All motion primitives')
 
   def angle_to_index(angle):
     for p in primitives:
@@ -71,8 +76,6 @@ def main():
     plot_primitives(
         primitives_with_start_angle_index(angle_index),
         f'start angle {numpy.rad2deg(angles[angle_index].angle):.2f} deg')
-
-  pyplot.show()
 
 
 if __name__ == '__main__':
