@@ -11,22 +11,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import matplotlib
 import numpy
-import PySide6  # noqa Force matplotlib to use qt backend.
-from matplotlib import pyplot
+import plotly.graph_objects as go
 
 from examples.path_planning import py_path_planning
 from examples.path_planning import utils
 
 
-def plot_results(path: numpy.ndarray, ax: matplotlib.axes.Axes,
-                 img: numpy.ndarray, color_map: str, title: str):
+def plot_results(path: numpy.ndarray, img: numpy.ndarray, title: str):
   num_rows, num_cols = img.shape
-  ax.imshow(img,
-            cmap=pyplot.get_cmap(color_map),
-            origin='lower',
-            extent=[0, num_cols, 0, num_rows])
+  fig = go.Figure()
+  fig.add_trace(go.Heatmap(z=img, colorscale='gray', reversescale=True))
+
+  fig.layout.xaxis.autorange = True
+  fig.layout.yaxis.autorange = True
+  # fig.layout.xaxis.dtick = 1
+  # fig.layout.yaxis.dtick = 1
+  fig.layout.xaxis.title = 'x'
+  fig.layout.yaxis.title = 'y'
+  fig.layout.yaxis.scaleanchor = 'x'
+  fig.show()
+
+  return
 
   if path:
     path_x = [p[0] for p in path]
@@ -110,28 +116,24 @@ def main():
   new_dstar_lite_path = replan_path(dstar_lite_planner, new_start,
                                     changed_positions)
 
-  _, ((ax1, ax2), (ax3, ax4)) = pyplot.subplots(2, 2, sharex=True, sharey=True)
-  plot_results(astar_path,
-               ax1,
-               original_obstacle_data,
-               color_map='Greys',
-               title='A*')
-  plot_results(dstar_lite_path,
-               ax2,
-               original_obstacle_data,
-               color_map='Greys',
-               title='D*Lite')
-  plot_results(new_astar_path,
-               ax3,
-               obstacle_data,
-               color_map='Greys',
-               title='Plan A*')
-  plot_results(new_dstar_lite_path,
-               ax4,
-               obstacle_data,
-               color_map='Greys',
-               title='Replan D*Lite')
-  pyplot.show()
+  # _, ((ax1, ax2), (ax3, ax4)) = pyplot.subplots(2, 2, sharex=True, sharey=True)
+  plot_results(astar_path, original_obstacle_data, title='A*')
+  # plot_results(dstar_lite_path,
+  #              ax2,
+  #              original_obstacle_data,
+  #              color_map='Greys',
+  #              title='D*Lite')
+  # plot_results(new_astar_path,
+  #              ax3,
+  #              obstacle_data,
+  #              color_map='Greys',
+  #              title='Plan A*')
+  # plot_results(new_dstar_lite_path,
+  #              ax4,
+  #              obstacle_data,
+  #              color_map='Greys',
+  #              title='Replan D*Lite')
+  # pyplot.show()
 
 
 if __name__ == '__main__':
