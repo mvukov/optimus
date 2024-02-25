@@ -118,8 +118,8 @@ def main():
       'D*Lite': dstar_lite_path
   }, original_obstacle_data, 'Planning')
   plot_results({
-      'Plan A*': new_astar_path,
-      'Replan D*Lite': new_dstar_lite_path
+      'A*': new_astar_path,
+      'D*Lite': new_dstar_lite_path
   }, obstacle_data, 'Replanning')
 
 
