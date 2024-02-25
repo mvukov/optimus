@@ -18,37 +18,34 @@ from examples.path_planning import py_path_planning
 from examples.path_planning import utils
 
 
-def plot_results(path: numpy.ndarray, img: numpy.ndarray, title: str):
-  num_rows, num_cols = img.shape
+def plot_results(names_to_paths: dict[str, numpy.ndarray], img: numpy.ndarray,
+                 title: str):
   fig = go.Figure()
-  fig.add_trace(go.Heatmap(z=img, colorscale='gray', reversescale=True))
+  fig.add_trace(
+      go.Heatmap(z=img, colorscale='gray', reversescale=True, showscale=False))
 
-  fig.layout.xaxis.autorange = True
-  fig.layout.yaxis.autorange = True
-  # fig.layout.xaxis.dtick = 1
-  # fig.layout.yaxis.dtick = 1
-  fig.layout.xaxis.title = 'x'
-  fig.layout.yaxis.title = 'y'
-  fig.layout.yaxis.scaleanchor = 'x'
+  for path_name, path in names_to_paths.items():
+    if path:
+
+      def draw_circle(p: numpy.ndarray, color: str, name: str):
+        fig.add_scatter(x=[p[0]],
+                        y=[p[1]],
+                        marker=dict(symbol='circle', size=10, color=color),
+                        showlegend=False,
+                        name=name)
+
+      draw_circle(path[0], 'tomato', 'start')
+      draw_circle(path[-1], 'lime', 'goal')
+
+      fig.add_scatter(x=[p[0] for p in path],
+                      y=[p[1] for p in path],
+                      mode='lines',
+                      name=f'{path_name} path')
+
+  fig.update_xaxes(autorange=True, title_text='x')
+  fig.update_yaxes(autorange=True, title_text='y', scaleanchor='x')
+  fig.layout.title = title
   fig.show()
-
-  return
-
-  if path:
-    path_x = [p[0] for p in path]
-    path_y = [p[1] for p in path]
-    ax.plot(path_x, path_y)
-
-    def draw_circle(p, color):
-      ax.add_patch(pyplot.Circle((p[0], p[1]), 2, color=color))
-
-    draw_circle(path[0], color='tomato')
-    draw_circle(path[-1], color='lime')
-
-  ax.grid()
-  ax.set_xlabel('x')
-  ax.set_ylabel('y')
-  ax.set_title(title)
 
 
 def plan_path(planner, obstacle_data, start, goal):
@@ -116,24 +113,14 @@ def main():
   new_dstar_lite_path = replan_path(dstar_lite_planner, new_start,
                                     changed_positions)
 
-  # _, ((ax1, ax2), (ax3, ax4)) = pyplot.subplots(2, 2, sharex=True, sharey=True)
-  plot_results(astar_path, original_obstacle_data, title='A*')
-  # plot_results(dstar_lite_path,
-  #              ax2,
-  #              original_obstacle_data,
-  #              color_map='Greys',
-  #              title='D*Lite')
-  # plot_results(new_astar_path,
-  #              ax3,
-  #              obstacle_data,
-  #              color_map='Greys',
-  #              title='Plan A*')
-  # plot_results(new_dstar_lite_path,
-  #              ax4,
-  #              obstacle_data,
-  #              color_map='Greys',
-  #              title='Replan D*Lite')
-  # pyplot.show()
+  plot_results({
+      'A*': astar_path,
+      'D*Lite': dstar_lite_path
+  }, original_obstacle_data, 'Planning')
+  plot_results({
+      'Plan A*': new_astar_path,
+      'Replan D*Lite': new_dstar_lite_path
+  }, obstacle_data, 'Replanning')
 
 
 if __name__ == '__main__':
