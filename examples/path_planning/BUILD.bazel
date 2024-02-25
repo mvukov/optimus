@@ -48,9 +48,8 @@ py_binary(
     deps = [
         ":py_path_planning",
         ":utils",
-        requirement("matplotlib"),
         requirement("numpy"),
-        requirement("PySide6"),
+        requirement("plotly"),
     ],
 )
 
