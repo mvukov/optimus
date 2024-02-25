@@ -16,8 +16,6 @@
 import argparse
 import dataclasses
 import os
-from typing import List
-from typing import Tuple
 
 import numpy
 
@@ -44,7 +42,7 @@ class MotionPrimitive2D:
 
 def generate_motion_primitives_for_export(
     grid_connectivity: int, min_radius_grid: float,
-    max_angle_idx_diff: int) -> Tuple[List[float], List[MotionPrimitive2D]]:
+    max_angle_idx_diff: int) -> tuple[list[float], list[MotionPrimitive2D]]:
   angles = primitive_generator.get_angles(grid_connectivity)
   primitives = primitive_generator.generate_all_primitives(
       angles, min_radius_grid, max_angle_idx_diff)
@@ -133,7 +131,7 @@ CPP_MOTION_PRIMITIVE_TEMPLATE = """{{
 
 
 def export_motion_primitives(angles: numpy.ndarray,
-                             motion_primitives: List[MotionPrimitive2D],
+                             motion_primitives: list[MotionPrimitive2D],
                              file_name: str) -> None:
 
   def export(value) -> str:

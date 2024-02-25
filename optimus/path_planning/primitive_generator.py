@@ -23,9 +23,6 @@ Important literature:
 """
 import dataclasses
 import logging
-from typing import List
-from typing import Optional
-from typing import Tuple
 
 import casadi
 import numpy.polynomial
@@ -199,7 +196,7 @@ class MotionPrimitiveGenerator:
       else:
         objective += 100 * q_k_int
 
-      x_k = casadi.SX.sym('x_{}'.format(kk + 1), x_size)
+      x_k = casadi.SX.sym(f'x_{kk + 1}', x_size)
       w += [x_k]
       g += [x_k_int - x_k]
 
@@ -287,7 +284,7 @@ class AngleAndCoord:
   y: float
 
 
-def get_angles(grid_connectivity: int) -> List[AngleAndCoord]:
+def get_angles(grid_connectivity: int) -> list[AngleAndCoord]:
   """ Given the grid connectivity value, returns a list of angles on the grid
       together with their xy-coords.
 
@@ -344,7 +341,7 @@ def get_cubic_poly_extrema(primitive: MotionPrimitive) -> numpy.ndarray:
 def generate_primitive(
     angle_and_min_coord_start: AngleAndCoord,
     angle_and_min_coord_end: AngleAndCoord, min_radius_grid: float,
-    generator: MotionPrimitiveGenerator) -> Optional[MotionPrimitive]:
+    generator: MotionPrimitiveGenerator) -> MotionPrimitive | None:
   """ Generates a motion primitive.
 
   Args:
@@ -450,7 +447,7 @@ class MotionPrimitiveExt:
 
 
 def create_extended_straight_primitives(
-    primitives: List[MotionPrimitiveExt]) -> List[MotionPrimitiveExt]:
+    primitives: list[MotionPrimitiveExt]) -> list[MotionPrimitiveExt]:
   """ See http://sbpl.net/node/53 "Forward Arc Motion Primitives".
 
   Straight extensions help getting more straight paths with search algorithms.
@@ -512,7 +509,7 @@ def create_extended_straight_primitives(
 
 
 def reflect_primitive(theta: float, primitive: MotionPrimitiveExt,
-                      angles: List[float]) -> MotionPrimitiveExt:
+                      angles: list[float]) -> MotionPrimitiveExt:
   reflection = geometry.to_reflection_tf(theta)
 
   num_samples = len(primitive.x)
@@ -549,7 +546,7 @@ def reflect_primitive(theta: float, primitive: MotionPrimitiveExt,
 
 
 def remove_duplicates(
-    primitives: List[MotionPrimitiveExt]) -> List[MotionPrimitiveExt]:
+    primitives: list[MotionPrimitiveExt]) -> list[MotionPrimitiveExt]:
   primitives_dict = {
       (p.start_angle_idx, p.end_angle_idx, p.length): p for p in primitives
   }
@@ -557,8 +554,8 @@ def remove_duplicates(
 
 
 def sort_primitives(
-    angles: List[AngleAndCoord],
-    primitives: List[MotionPrimitiveExt]) -> List[MotionPrimitiveExt]:
+    angles: list[AngleAndCoord],
+    primitives: list[MotionPrimitiveExt]) -> list[MotionPrimitiveExt]:
   num_angles = len(angles)
   sorted_primitives = []
   for start_angle_idx in range(num_angles):
@@ -581,7 +578,7 @@ def sort_primitives(
 
 
 def shift_primitives(
-    primitives: List[MotionPrimitiveExt]) -> List[MotionPrimitiveExt]:
+    primitives: list[MotionPrimitiveExt]) -> list[MotionPrimitiveExt]:
   shifted_primitives = []
   for p in primitives:
     shifted_primitives.append(
@@ -594,8 +591,8 @@ def shift_primitives(
 # V2: add bool flag for reverse motions.
 # V3: add bool flag for in-place rotations.
 def generate_all_primitives(
-    angles_and_min_coords: List[AngleAndCoord], min_radius_grid: float,
-    max_angle_idx_diff: int) -> List[MotionPrimitiveExt]:
+    angles_and_min_coords: list[AngleAndCoord], min_radius_grid: float,
+    max_angle_idx_diff: int) -> list[MotionPrimitiveExt]:
   """ Generates motion primitives given the list of angles.
 
   Args:
@@ -678,7 +675,7 @@ def to_grid_coord(coord: float) -> int:
 
 
 def split_primitive_xy(
-    primitive: MotionPrimitiveExt) -> Tuple[numpy.ndarray, numpy.ndarray]:
+    primitive: MotionPrimitiveExt) -> tuple[numpy.ndarray, numpy.ndarray]:
   x = numpy.asarray(primitive.x)
   y = numpy.asarray(primitive.y)
   if x.shape != y.shape:
@@ -696,7 +693,7 @@ def split_primitive_xy(
   return split_x, split_y
 
 
-ListPairOfInts = List[Tuple[int, int]]
+ListPairOfInts = list[tuple[int, int]]
 
 
 def compute_swath(primitive: MotionPrimitiveExt) -> ListPairOfInts:

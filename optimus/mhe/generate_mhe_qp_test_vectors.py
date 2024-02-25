@@ -160,9 +160,9 @@ def main():
       for test_vector in constrained_test_vectors
   ])
 
-  header = """
-static constexpr size_t kNx = {nx};
-static constexpr size_t kNu = {nu};
+  header = f"""
+static constexpr size_t kNx = {NX};
+static constexpr size_t kNu = {NU};
 
 struct QpTestVector {{
   size_t num_intervals;
@@ -192,10 +192,7 @@ const std::vector<QpTestVector> qp_test_vectors = {{
 const std::vector<QpTestVector> constrained_qp_test_vectors = {{
 {constrained_test_vector_strings}
 }};
-""".format(nx=NX,
-           nu=NU,
-           test_vector_strings=test_vector_strings,
-           constrained_test_vector_strings=constrained_test_vector_strings)
+"""
 
   with open(args.output, 'w') as stream:
     stream.write(header)
