@@ -43,11 +43,23 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "hedron_compile_commands",
-    sha256 = "dd3ff589992589c73f1d2138cea44ce1312a06caa554124f8806fd1d04d436ab",
-    strip_prefix = "bazel-compile-commands-extractor-9d438afd4febf622aa05b9a267c09439717e58b9",
-    url = "https://github.com/hedronvision/bazel-compile-commands-extractor/archive/9d438afd4febf622aa05b9a267c09439717e58b9.tar.gz",
+    sha256 = "43883b798725f07492f79b42451300fb9adf931eadc35e49114414914b0a5697",
+    strip_prefix = "bazel-compile-commands-extractor-09fee2fd2082b17baa9582ca2b2d63fe19caa294",
+    url = "https://github.com/hedronvision/bazel-compile-commands-extractor/archive/09fee2fd2082b17baa9582ca2b2d63fe19caa294.tar.gz",
 )
 
 load("@hedron_compile_commands//:workspace_setup.bzl", "hedron_compile_commands_setup")
 
 hedron_compile_commands_setup()
+
+load("@hedron_compile_commands//:workspace_setup_transitive.bzl", "hedron_compile_commands_setup_transitive")
+
+hedron_compile_commands_setup_transitive()
+
+load("@hedron_compile_commands//:workspace_setup_transitive_transitive.bzl", "hedron_compile_commands_setup_transitive_transitive")
+
+hedron_compile_commands_setup_transitive_transitive()
+
+load("@hedron_compile_commands//:workspace_setup_transitive_transitive_transitive.bzl", "hedron_compile_commands_setup_transitive_transitive_transitive")
+
+hedron_compile_commands_setup_transitive_transitive_transitive()
