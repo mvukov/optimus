@@ -72,8 +72,8 @@ class EigenNearMatcher {
           equal = false;
           if (listener != nullptr) {
             *listener << std::endl
-                      << "matrices differ at (" << row << ",  " << col << "): "
-                      << " expected " << expected_value << ", got "
+                      << "matrices differ at (" << row << ",  " << col
+                      << "): " << " expected " << expected_value << ", got "
                       << actual_value << ", abs(diff)="
                       << std::abs(expected_value - actual_value);
           }
