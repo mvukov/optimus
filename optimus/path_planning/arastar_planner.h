@@ -1,4 +1,4 @@
-// Copyright 2023 Milan Vukov. All rights reserved.
+// Copyright 2024 Milan Vukov. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ class AraStarPlanner
 
  public:
   AraStarPlanner(const AraStarPlannerConfig& config, Environment* env)
-      : config_(config), Base::Base(env) {}
+      : Base(env), config_(config) {}
 
   PlannerStatus PlanPathImpl(int start, int goal,
                              const UserCallback& user_callback,
@@ -86,7 +86,7 @@ PlannerStatus AraStarPlanner<E>::PlanPathImpl(int start, int goal,
                                               std::vector<int>& path) {
   Reset();
 
-  goal_ = goal_;
+  goal_ = goal;
   epsilon_ = config_.epsilon_start;
 
   indices_to_g_values_[goal] = kInfCost;
@@ -140,7 +140,7 @@ void AraStarPlanner<E>::Reset() {
 
 template <class E>
 Key AraStarPlanner<E>::ComputeKey(int index) const {
-  const auto g_value = indices_to_g_values_[index];
+  const auto g_value = indices_to_g_values_.at(index);
   return {g_value + epsilon_ * this->env_->GetHeuristicCost(index, goal_),
           g_value};
 }
@@ -224,13 +224,13 @@ PlannerStatus AraStarPlanner<E>::ImprovePath(
       }
     }
   }
-  if (open_queue_.empty()) {
+  if (IsInf(indices_to_g_values_[goal_])) {
     return PlannerStatus::kInfeasibleProblem;
   }
   return PlannerStatus::kSuccess;
 }
 
-// TODO(mvukov) This is the same as in A*, factor this function to a common
+// TODO(mvukov) This is the same as in A*, factor this function out to a common
 // place!
 template <class E>
 bool AraStarPlanner<E>::ReconstructShortestPath(
