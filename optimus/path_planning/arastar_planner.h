@@ -52,21 +52,24 @@ class AraStarPlanner
 
   auto GetGValue(int index) const { return indices_to_g_values_.at(index); }
 
+  auto epsilon() const { return epsilon_; }
+
  private:
   void Reset();
   Key ComputeKey(int index) const;
   PlannerStatus RunImprovePathLoop(const UserCallback& user_callback,
                                    std::vector<int>& path);
   PlannerStatus ImprovePath(const UserCallback& user_callback);
-  bool ReconstructShortestPath(int goal, const UserCallback& user_callback,
-                               std::vector<int>& path);
+  PlannerStatus ReconstructShortestPath(int goal,
+                                        const UserCallback& user_callback,
+                                        std::vector<int>& path);
 
   AraStarPlannerConfig config_;
 
   PriorityQueue open_queue_;
   boost::unordered::unordered_flat_set<int> inconsistent_indices_;
 
-  std::vector<bool> closed_indices_;
+  boost::unordered::unordered_flat_set<int> closed_indices_;
   std::vector<bool> visited_indices_;
 
   // It is way faster to have those below as std::vector at the expense of
@@ -75,7 +78,7 @@ class AraStarPlanner
   boost::unordered::unordered_flat_map<int, float> indices_to_g_values_;
 
   int goal_ = kInvalidIndex;
-  float epsilon_;
+  float epsilon_ = 1.;
   std::vector<int> neighbors_;
   std::vector<float> pivot_to_neighbor_costs_;
 };
@@ -100,6 +103,9 @@ PlannerStatus AraStarPlanner<E>::PlanPathImpl(int start, int goal,
       status != PlannerStatus::kSuccess) {
     return status;
   }
+  if (user_callback && !user_callback(UserCallbackEvent::kSolutionFound)) {
+    return ReconstructShortestPath(goal_, user_callback, path);
+  }
   return RunImprovePathLoop(user_callback, path);
 }
 
@@ -122,7 +128,7 @@ void AraStarPlanner<E>::Reset() {
   open_queue_.clear();
   inconsistent_indices_.clear();
   closed_indices_.clear();
-  closed_indices_.resize(state_space_size, false);
+  closed_indices_.reserve(state_space_size);
   visited_indices_.clear();
   visited_indices_.resize(state_space_size, false);
   indices_to_parent_indices_.clear();
@@ -158,28 +164,20 @@ PlannerStatus AraStarPlanner<E>::RunImprovePathLoop(
       open_queue_.InsertOrUpdate(index, ComputeKey(index));
     }
     inconsistent_indices_.clear();
-    // TODO(mvukov) Now it perhaps makes sense to use a set instead of vector?
-    std::fill(closed_indices_.begin(), closed_indices_.end(), false);
+    closed_indices_.clear();
 
-    // In principle, we should provide user with a callback each time
-    // we find a suboptimal solution. Then the user can decide whether to
-    // proceed or abort.
     switch (auto status = ImprovePath(user_callback); status) {
       case PlannerStatus::kSuccess:
-        if (!ReconstructShortestPath(goal_, user_callback, path)) {
-          return PlannerStatus::kInternalError;
+        if (user_callback &&
+            !user_callback(UserCallbackEvent::kSolutionFound)) {
+          return ReconstructShortestPath(goal_, user_callback, path);
         }
-        return PlannerStatus::kSuccess;
-      // TODO(mvukov) Reconstruct if user-aborted!
-      // In other words: if there is a sub-optimal solution, return it.
+        break;
       default:
         return status;
     }
   }
-  if (!ReconstructShortestPath(goal_, user_callback, path)) {
-    return PlannerStatus::kInternalError;
-  }
-  return PlannerStatus::kSuccess;
+  return ReconstructShortestPath(goal_, user_callback, path);
 }
 
 template <class E>
@@ -194,7 +192,7 @@ PlannerStatus AraStarPlanner<E>::ImprovePath(
     open_queue_.pop();
 
     const auto pivot_index = pivot.index;
-    closed_indices_[pivot_index] = true;
+    closed_indices_.insert(pivot_index);
 
     this->env_->GetNeighborsAndCosts(pivot_index, neighbors_,
                                      pivot_to_neighbor_costs_);
@@ -214,7 +212,7 @@ PlannerStatus AraStarPlanner<E>::ImprovePath(
       const auto new_g_value_ =
           indices_to_g_values_[pivot_index] + pivot_to_neighbor_costs_[el];
       if (new_g_value_ < indices_to_g_values_[neighbor]) {
-        if (!closed_indices_[neighbor]) {
+        if (closed_indices_.count(neighbor) == 0) {
           indices_to_g_values_[neighbor] = new_g_value_;
           indices_to_parent_indices_[neighbor] = pivot_index;
           open_queue_.InsertOrUpdate(neighbor, ComputeKey(neighbor));
@@ -233,13 +231,13 @@ PlannerStatus AraStarPlanner<E>::ImprovePath(
 // TODO(mvukov) This is the same as in A*, factor this function out to a common
 // place!
 template <class E>
-bool AraStarPlanner<E>::ReconstructShortestPath(
+PlannerStatus AraStarPlanner<E>::ReconstructShortestPath(
     int goal, const UserCallback& user_callback, std::vector<int>& path) {
   auto path_length = 1;
   auto current = goal;
   while (true) {
     if (user_callback && !user_callback(UserCallbackEvent::kReconstruction)) {
-      return false;
+      return PlannerStatus::kInternalError;
     }
     auto parent = indices_to_parent_indices_.at(current);
     if (parent == current) {
@@ -262,7 +260,7 @@ bool AraStarPlanner<E>::ReconstructShortestPath(
     --offset;
     current = parent;
   }
-  return true;
+  return PlannerStatus::kSuccess;
 }
 
 }  // namespace optimus
