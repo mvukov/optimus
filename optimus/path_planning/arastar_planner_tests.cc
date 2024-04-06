@@ -129,4 +129,27 @@ TEST_F(TestAraStarPlannerOn2DGrid,
   EXPECT_THAT(planner_->epsilon(), Eq(planner_config_.epsilon_start));
 }
 
+TEST_F(
+    TestAraStarPlannerOn2DGrid,
+    GivenFeasibleProblem_WhenPlanPathStopped_EnsureFinalSolutionFoundAfterReplanning) {  // NOLINT
+  SetObstaclesAsInPaper();
+
+  auto callback = [](UserCallbackEvent event) {
+    return event != UserCallbackEvent::kSolutionFound;
+  };
+  EXPECT_THAT(planner_->PlanPath(0, 41, callback, path_),
+              Eq(PlannerStatus::kSuccess));
+  EXPECT_THAT(planner_->epsilon(), Eq(planner_config_.epsilon_start));
+
+  // At this moment replanning in anytime-planner means to refine the search
+  // (continue decreasing epsilon). The start and changed_indices arguments are
+  // there only for API compatibility (not used). No callback is given such that
+  // we let the planner to decrease epsilon to 1.
+  EXPECT_THAT(planner_->ReplanPath(0, {}, {}, path_),
+              Eq(PlannerStatus::kSuccess));
+  expected_path_ = {0, 1, 2, 3, 4, 11, 17, 23, 29, 35, 41};
+  EXPECT_THAT(path_, Eq(expected_path_));
+  EXPECT_THAT(planner_->epsilon(), Eq(1.));
+}
+
 }  // namespace optimus

@@ -115,9 +115,6 @@ PlannerStatus AraStarPlanner<E>::ReplanPathImpl(
   if (goal_ == kInvalidIndex) {
     return PlannerStatus::kInternalError;
   }
-  // TODO(mvukov) It may be that the first search was just interrupted.
-  // Therefore, here in that case we should start from scratch in fact.
-  // OR, we can just continue, because the algorithm supports this.
   return RunImprovePathLoop(user_callback, path);
 }
 
