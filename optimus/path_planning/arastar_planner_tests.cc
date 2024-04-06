@@ -63,7 +63,7 @@ class TestAraStarPlannerOn2DGrid : public Test {
     env_ = std::make_unique<Grid2DEnvironment>(env_config);
     EXPECT_TRUE(env_->SetGrid2D(grid_2d_map_.get()));
 
-    planner_ = std::make_unique<Planner>(planner_config_, env_.get());
+    planner_ = std::make_unique<Planner>(env_.get(), planner_config_);
   }
 
   void SetObstacles(const std::vector<int>& indices) {

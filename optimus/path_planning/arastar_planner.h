@@ -40,7 +40,7 @@ class AraStarPlanner
   using Base = PlannerAlgorithm<AraStarPlanner<Environment>, Environment>;
 
  public:
-  AraStarPlanner(const AraStarPlannerConfig& config, Environment* env)
+  AraStarPlanner(Environment* env, const AraStarPlannerConfig& config)
       : Base(env), config_(config) {}
 
   PlannerStatus PlanPathImpl(int start, int goal,

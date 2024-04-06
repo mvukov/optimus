@@ -15,6 +15,7 @@
 #define OPTIMUS_PATH_PLANNING_GRID_2D_PLANNER_H_
 
 #include <optional>
+#include <utility>
 #include <vector>
 
 #include "optimus/path_planning/grid_2d.h"
@@ -56,8 +57,11 @@ class Grid2DPlannerBase {
 template <class Algorithm>
 class Grid2DPlanner final : public Grid2DPlannerBase {
  public:
-  explicit Grid2DPlanner(const Grid2DEnvironment::Config& config)
-      : Grid2DPlannerBase(config), algorithm_(&env_) {}
+  template <typename... Args>
+  explicit Grid2DPlanner(const Grid2DEnvironment::Config& config,
+                         Args&&... args)
+      : Grid2DPlannerBase(config),
+        algorithm_(&env_, std::forward<Args>(args)...) {}
 
   PlannerStatus PlanPath(const Position2D& start, const Position2D& goal,
                          const UserCallback& user_callback,

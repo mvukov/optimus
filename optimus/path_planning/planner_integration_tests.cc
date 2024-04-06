@@ -18,6 +18,7 @@
 #include "gtest/gtest.h"
 
 #include "optimus/path_planning/action_set_2d.h"
+#include "optimus/path_planning/arastar_grid_2d_planner.h"
 #include "optimus/path_planning/astar_grid_2d_planner.h"
 #include "optimus/path_planning/astar_se2_planner.h"
 #include "optimus/path_planning/dstar_lite_grid_2d_planner.h"
@@ -134,6 +135,16 @@ TEST_F(TestGrid2DPlanners,
 }
 
 TEST_F(TestGrid2DPlanners,
+       GivenAraStarLiteGrid2DPlanner_WhenEmptySpace_EnsurePathIsFound) {
+  AraStarPlannerConfig planner_config;
+  planner_ =
+      std::make_unique<AraStarGrid2DPlanner>(env_config_, planner_config);
+  PlanPath();
+  EXPECT_THAT(GetPathCost(), Eq(kExpectedStraightPathCost));
+  EXPECT_THAT(num_iterations_, Eq(26));
+}
+
+TEST_F(TestGrid2DPlanners,
        GivenAStarGrid2DPlanner_WhenObstaclePresent_EnsurePathIsFound) {
   MakeObstacle();
   planner_ = std::make_unique<AStarGrid2DPlanner>(env_config_);
@@ -149,6 +160,26 @@ TEST_F(TestGrid2DPlanners,
   PlanPath();
   EXPECT_THAT(GetPathCost(), Eq(kExpectedPathAroundObstacleCost));
   EXPECT_THAT(num_iterations_, Eq(377));
+}
+
+TEST_F(TestGrid2DPlanners,
+       GivenAraStarLiteGrid2DPlanner_WhenObstaclePresent_EnsurePathIsFound) {
+  MakeObstacle();
+  AraStarPlannerConfig planner_config;
+  planner_config.epsilon_start = 1.;  // This case is equivalent to A*.
+  planner_ =
+      std::make_unique<AraStarGrid2DPlanner>(env_config_, planner_config);
+  PlanPath();
+  EXPECT_THAT(GetPathCost(), Eq(kExpectedPathAroundObstacleCost));
+  EXPECT_THAT(num_iterations_, Eq(387));
+
+  // In this case, the ARA* path is a bit longer than the one from A*.
+  planner_config.epsilon_start = 3.;
+  planner_ =
+      std::make_unique<AraStarGrid2DPlanner>(env_config_, planner_config);
+  PlanPath();
+  EXPECT_THAT(GetPathCost(), FloatNear(kExpectedPathAroundObstacleCost, 0.6));
+  EXPECT_THAT(num_iterations_, Eq(569));
 }
 
 class TestGrid2DPlannersNewStartAndRaisedObstacle : public TestGrid2DPlanners {

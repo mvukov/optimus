@@ -44,6 +44,7 @@ cc_library(
     ],
     hdrs = [
         "action_set_2d.h",
+        "arastar_grid_2d_planner.h",
         "arastar_planner.h",
         "astar_grid_2d_planner.h",
         "astar_planner.h",
