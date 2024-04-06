@@ -39,6 +39,7 @@ TEST_F(TestAraStarPlannerConfig,
   config_.epsilon_start = 0.99;
   EXPECT_FALSE(config_.Validate());
 }
+
 TEST_F(
     TestAraStarPlannerConfig,
     GivenValidConfig_WhenEpsilonDecreaseRateLessThanZero_EnsureValidateFails) {

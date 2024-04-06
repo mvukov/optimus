@@ -20,6 +20,7 @@
 #include "boost/unordered/unordered_flat_map.hpp"
 #include "boost/unordered/unordered_flat_set.hpp"
 
+#include "optimus/path_planning/astar_planner_internal.h"
 #include "optimus/path_planning/planner_algorithm.h"
 #include "optimus/path_planning/priority_queue_utils.h"
 
@@ -60,9 +61,6 @@ class AraStarPlanner
   PlannerStatus RunImprovePathLoop(const UserCallback& user_callback,
                                    std::vector<int>& path);
   PlannerStatus ImprovePath(const UserCallback& user_callback);
-  PlannerStatus ReconstructShortestPath(int goal,
-                                        const UserCallback& user_callback,
-                                        std::vector<int>& path);
 
   AraStarPlannerConfig config_;
 
@@ -104,7 +102,8 @@ PlannerStatus AraStarPlanner<E>::PlanPathImpl(int start, int goal,
     return status;
   }
   if (user_callback && !user_callback(UserCallbackEvent::kSolutionFound)) {
-    return ReconstructShortestPath(goal_, user_callback, path);
+    return internal::ReconstructShortestPath(goal_, user_callback,
+                                             indices_to_parent_indices_, path);
   }
   return RunImprovePathLoop(user_callback, path);
 }
@@ -170,14 +169,16 @@ PlannerStatus AraStarPlanner<E>::RunImprovePathLoop(
       case PlannerStatus::kSuccess:
         if (user_callback &&
             !user_callback(UserCallbackEvent::kSolutionFound)) {
-          return ReconstructShortestPath(goal_, user_callback, path);
+          return internal::ReconstructShortestPath(
+              goal_, user_callback, indices_to_parent_indices_, path);
         }
         break;
       default:
         return status;
     }
   }
-  return ReconstructShortestPath(goal_, user_callback, path);
+  return internal::ReconstructShortestPath(goal_, user_callback,
+                                           indices_to_parent_indices_, path);
 }
 
 template <class E>
@@ -224,41 +225,6 @@ PlannerStatus AraStarPlanner<E>::ImprovePath(
   }
   if (IsInf(indices_to_g_values_[goal_])) {
     return PlannerStatus::kInfeasibleProblem;
-  }
-  return PlannerStatus::kSuccess;
-}
-
-// TODO(mvukov) This is the same as in A*, factor this function out to a common
-// place!
-template <class E>
-PlannerStatus AraStarPlanner<E>::ReconstructShortestPath(
-    int goal, const UserCallback& user_callback, std::vector<int>& path) {
-  auto path_length = 1;
-  auto current = goal;
-  while (true) {
-    if (user_callback && !user_callback(UserCallbackEvent::kReconstruction)) {
-      return PlannerStatus::kInternalError;
-    }
-    auto parent = indices_to_parent_indices_.at(current);
-    if (parent == current) {
-      break;
-    }
-    ++path_length;
-    current = parent;
-  }
-
-  path.resize(path_length);
-  path.back() = goal;
-  auto offset = path.size() - 2;
-  current = goal;
-  while (true) {
-    auto parent = indices_to_parent_indices_.at(current);
-    if (parent == current) {
-      break;
-    }
-    path[offset] = parent;
-    --offset;
-    current = parent;
   }
   return PlannerStatus::kSuccess;
 }
