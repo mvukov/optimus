@@ -44,6 +44,8 @@ class Grid2DPlannerBase {
 
   virtual std::optional<float> GetPathCost() const = 0;
 
+  virtual float epsilon() const = 0;
+
  protected:
   int GetStateIndex(const Position2D& t) const;
   void ReconstructPath(const std::vector<int>& path_indices,
@@ -54,7 +56,7 @@ class Grid2DPlannerBase {
   std::optional<int> goal_index_;
 };
 
-template <class Algorithm>
+template <class Algorithm, bool Anytime = false>
 class Grid2DPlanner final : public Grid2DPlannerBase {
  public:
   template <typename... Args>
@@ -74,12 +76,20 @@ class Grid2DPlanner final : public Grid2DPlannerBase {
 
   std::optional<float> GetPathCost() const final;
 
+  float epsilon() const final {
+    if constexpr (Anytime) {
+      return algorithm_.epsilon();
+    } else {
+      return 1.;
+    }
+  }
+
  private:
   Algorithm algorithm_;
 };
 
-template <class Algorithm>
-PlannerStatus Grid2DPlanner<Algorithm>::PlanPath(
+template <class Algorithm, bool Anytime>
+PlannerStatus Grid2DPlanner<Algorithm, Anytime>::PlanPath(
     const Position2D& start, const Position2D& goal,
     const UserCallback& user_callback, std::vector<Position2D>& path) {
   start_index_.reset();

@@ -15,10 +15,12 @@
 #include <iostream>
 
 #include "pybind11/eigen.h"
+#include "pybind11/functional.h"
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 
 #include "optimus/path_planning/action_set_2d.h"
+#include "optimus/path_planning/arastar_grid_2d_planner.h"
 #include "optimus/path_planning/astar_grid_2d_planner.h"
 #include "optimus/path_planning/astar_se2_planner.h"
 #include "optimus/path_planning/dstar_lite_grid_2d_planner.h"
@@ -53,7 +55,7 @@ class PyPlanner {
   }
 
  protected:
-  py::array_t<Grid2DScalar> grid_2d_;
+  PyGrid2D grid_2d_;
   std::unique_ptr<Grid2DMap> grid_2d_map_;
 };
 
@@ -139,23 +141,31 @@ using ExampleDStarLiteSE2Planner = ExampleSE2Planner<DStarLiteSE2Planner>;
 template <class Planner>
 class PyGrid2DPlanner : public PyPlanner<PyGrid2DPlanner<Planner>> {
  public:
-  explicit PyGrid2DPlanner(const Grid2DEnvironment::Config& config)
-      : planner_(config) {}
+  template <typename... Args>
+  explicit PyGrid2DPlanner(const Grid2DEnvironment::Config& config,
+                           Args&&... args)
+      : planner_(config, std::forward<Args>(args)...) {}
 
-  std::vector<Position2D> PlanPath(const Position2D& start,
-                                   const Position2D& goal) {
+  std::vector<Position2D> PlanPath(
+      const Position2D& start, const Position2D& goal,
+      const std::optional<UserCallback>& user_callback) {
     std::vector<Position2D> path;
     planning_time_ = 0;
     num_expansions_ = 0;
-    auto callback = [this](UserCallbackEvent event) {
+
+    auto callback = [this, &user_callback](UserCallbackEvent event) {
       if (PyErr_CheckSignals() != 0) {
         throw py::error_already_set();
       }
       if (event == UserCallbackEvent::kSearch) {
         ++num_expansions_;
       }
+      if (user_callback != std::nullopt) {
+        return user_callback.value()(event);
+      }
       return true;
     };
+
     const auto start_timestamp = std::chrono::steady_clock::now();
     if (auto status = planner_.PlanPath(start, goal, callback, path);
         status != PlannerStatus::kSuccess) {
@@ -169,14 +179,17 @@ class PyGrid2DPlanner : public PyPlanner<PyGrid2DPlanner<Planner>> {
   }
 
   std::vector<Position2D> ReplanPath(
-      const Position2D& start,
-      const std::vector<Position2D>& changed_positions) {
+      const Position2D& start, const std::vector<Position2D>& changed_positions,
+      const std::optional<UserCallback>& user_callback) {
     std::vector<Position2D> path;
     planning_time_ = 0;
     num_expansions_ = 0;
-    auto callback = [this](UserCallbackEvent event) {
+    auto callback = [this, &user_callback](UserCallbackEvent event) {
       if (event == UserCallbackEvent::kSearch) {
         ++num_expansions_;
+      }
+      if (user_callback != std::nullopt) {
+        return user_callback.value()(event);
       }
       return true;
     };
@@ -196,6 +209,7 @@ class PyGrid2DPlanner : public PyPlanner<PyGrid2DPlanner<Planner>> {
   auto planning_time() const { return planning_time_; }
   auto num_expansions() const { return num_expansions_; }
   auto path_cost() const { return planner_.GetPathCost(); }
+  auto epsilon() const { return planner_.epsilon(); }
 
   auto* mutable_planner() { return &planner_; }
 
@@ -207,6 +221,7 @@ class PyGrid2DPlanner : public PyPlanner<PyGrid2DPlanner<Planner>> {
 
 using PyAStarGrid2DPlanner = PyGrid2DPlanner<AStarGrid2DPlanner>;
 using PyDStarLiteGrid2DPlanner = PyGrid2DPlanner<DStarLiteGrid2DPlanner>;
+using PyAraStarGrid2DPlanner = PyGrid2DPlanner<AraStarGrid2DPlanner>;
 
 PYBIND11_MODULE(py_path_planning, m) {
   auto se2_environment = py::class_<SE2Environment>(m, "SE2Environment");
@@ -262,8 +277,11 @@ PYBIND11_MODULE(py_path_planning, m) {
 
   py::class_<PyAStarGrid2DPlanner>(m, "AStarGrid2DPlanner")
       .def(py::init<const Grid2DEnvironment::Config&>(), py::arg("config"))
-      .def("plan_path", &PyAStarGrid2DPlanner::PlanPath)
-      .def("replan_path", &PyAStarGrid2DPlanner::ReplanPath)
+      .def("plan_path", &PyAStarGrid2DPlanner::PlanPath, py::arg("start"),
+           py::arg("goal"), py::arg("user_callback") = std::nullopt)
+      .def("replan_path", &PyAStarGrid2DPlanner::ReplanPath, py::arg("start"),
+           py::arg("changed_positions"),
+           py::arg("user_callback") = std::nullopt)
       .def("set_grid_2d", &PyAStarGrid2DPlanner::SetGrid2D)
       .def_property_readonly("planning_time",
                              &PyAStarGrid2DPlanner::planning_time)
@@ -273,14 +291,47 @@ PYBIND11_MODULE(py_path_planning, m) {
 
   py::class_<PyDStarLiteGrid2DPlanner>(m, "DStarLiteGrid2DPlanner")
       .def(py::init<const Grid2DEnvironment::Config&>(), py::arg("config"))
-      .def("plan_path", &PyDStarLiteGrid2DPlanner::PlanPath)
-      .def("replan_path", &PyDStarLiteGrid2DPlanner::ReplanPath)
+      .def("plan_path", &PyDStarLiteGrid2DPlanner::PlanPath, py::arg("start"),
+           py::arg("goal"), py::arg("user_callback") = std::nullopt)
+      .def("replan_path", &PyDStarLiteGrid2DPlanner::ReplanPath,
+           py::arg("start"), py::arg("changed_positions"),
+           py::arg("user_callback") = std::nullopt)
       .def("set_grid_2d", &PyDStarLiteGrid2DPlanner::SetGrid2D)
       .def_property_readonly("planning_time",
                              &PyDStarLiteGrid2DPlanner::planning_time)
       .def_property_readonly("num_expansions",
                              &PyDStarLiteGrid2DPlanner::num_expansions)
       .def_property_readonly("path_cost", &PyDStarLiteGrid2DPlanner::path_cost);
+
+  py::class_<AraStarPlannerConfig>(m, "AraStarPlannerConfig")
+      .def(py::init<>())
+      .def_readwrite("epsilon_start", &AraStarPlannerConfig::epsilon_start)
+      .def_readwrite("epsilon_decrease_rate",
+                     &AraStarPlannerConfig::epsilon_decrease_rate)
+      .def("validate", &AraStarPlannerConfig::Validate);
+
+  py::class_<PyAraStarGrid2DPlanner>(m, "AraStarGrid2DPlanner")
+      .def(py::init<const Grid2DEnvironment::Config&,
+                    const AraStarPlannerConfig&>(),
+           py::arg("env_config"), py::arg("planner_config"))
+      .def("plan_path", &PyAraStarGrid2DPlanner::PlanPath, py::arg("start"),
+           py::arg("goal"), py::arg("user_callback") = std::nullopt)
+      .def("replan_path", &PyAraStarGrid2DPlanner::ReplanPath, py::arg("start"),
+           py::arg("changed_positions"),
+           py::arg("user_callback") = std::nullopt)
+      .def("set_grid_2d", &PyAraStarGrid2DPlanner::SetGrid2D)
+      .def_property_readonly("planning_time",
+                             &PyAraStarGrid2DPlanner::planning_time)
+      .def_property_readonly("num_expansions",
+                             &PyAraStarGrid2DPlanner::num_expansions)
+      .def_property_readonly("path_cost", &PyAraStarGrid2DPlanner::path_cost)
+      .def_property_readonly("epsilon", &PyAraStarGrid2DPlanner::epsilon);
+
+  py::enum_<UserCallbackEvent>(m, "UserCallbackEvent")
+      .value("SEARCH", UserCallbackEvent::kSearch)
+      .value("RECONSTRUCTION", UserCallbackEvent::kReconstruction)
+      .value("SOLUTION_FOUND", UserCallbackEvent::kSolutionFound)
+      .export_values();
 }
 
 }  // namespace optimus

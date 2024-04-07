@@ -21,7 +21,8 @@
 
 namespace optimus {
 
-using AraStarGrid2DPlanner = Grid2DPlanner<AraStarPlanner<Grid2DEnvironment>>;
+using AraStarGrid2DPlanner =
+    Grid2DPlanner<AraStarPlanner<Grid2DEnvironment>, /*Anytime=*/true>;
 
 template <>
 std::optional<float> AraStarGrid2DPlanner::GetPathCost() const {

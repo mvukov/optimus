@@ -48,11 +48,11 @@ def plot_results(names_to_paths: dict[str, numpy.ndarray], img: numpy.ndarray,
   fig.show()
 
 
-def plan_path(planner, obstacle_data, start, goal):
+def plan_path(planner, obstacle_data, start, goal, callback=None):
   path = []
   try:
     planner.set_grid_2d(obstacle_data)
-    path = planner.plan_path(start, goal)
+    path = planner.plan_path(start, goal, callback)
     print(f'Planning time: {planner.planning_time:.3f} seconds')
     print(f'Number of expansions: {planner.num_expansions}')
     print(f'Path cost: {planner.path_cost:.3f}')
@@ -62,10 +62,10 @@ def plan_path(planner, obstacle_data, start, goal):
   return path
 
 
-def replan_path(planner, start, changed_positions):
+def replan_path(planner, start, changed_positions, callback=None):
   path = []
   try:
-    path = planner.replan_path(start, changed_positions)
+    path = planner.replan_path(start, changed_positions, callback)
     print(f'Replanning time: {planner.planning_time:.3f} seconds')
     print(f'Number of expansions: {planner.num_expansions}')
     print(f'Path cost: {planner.path_cost:.3f}')
@@ -73,6 +73,30 @@ def replan_path(planner, start, changed_positions):
   except RuntimeError as ex:
     print(ex)
   return path
+
+
+def compute_all_arastar_planner_improvements(planner, obstacle_data, start,
+                                             goal):
+
+  def callback(event):
+    return event != py_path_planning.UserCallbackEvent.SOLUTION_FOUND
+
+  names_to_paths = dict()
+
+  def append_path(path):
+    names_to_paths[f'epsilon={planner.epsilon}'] = path
+
+  # Timings are likely to be quote off due to signifant callback oveheads.
+  # The main point here is to illustrate path improvements.
+  path = plan_path(planner, obstacle_data, start, goal, callback)
+  append_path(path)
+  while True:
+    path = replan_path(planner, start, [], callback)
+    append_path(path)
+    if numpy.isclose(planner.epsilon, 1.):
+      break
+
+  return names_to_paths
 
 
 def main():
@@ -94,6 +118,13 @@ def main():
   print('Running D*Lite')
   dstar_lite_path = plan_path(dstar_lite_planner, obstacle_data, start, goal)
 
+  arastar_config = py_path_planning.AraStarPlannerConfig()
+  assert arastar_config.validate()
+  arastar_planner = py_path_planning.AraStarGrid2DPlanner(
+      env_config, arastar_config)
+  print('Running ARA*')
+  arastar_path = plan_path(arastar_planner, obstacle_data, start, goal)
+
   print('\n\nReplanning')
   # Simulate a moving robot: move a robot to a point approx. on the previously
   # found path.
@@ -113,14 +144,22 @@ def main():
   new_dstar_lite_path = replan_path(dstar_lite_planner, new_start,
                                     changed_positions)
 
-  plot_results({
-      'A*': astar_path,
-      'D*Lite': dstar_lite_path
-  }, original_obstacle_data, 'Planning')
+  plot_results(
+      {
+          'A*': astar_path,
+          'D*Lite': dstar_lite_path,
+          'ARA*': arastar_path
+      }, original_obstacle_data, 'Planning')
   plot_results({
       'A*': new_astar_path,
       'D*Lite': new_dstar_lite_path
   }, obstacle_data, 'Replanning')
+
+  print('\n\nARA* improvements')
+  arastar_improvement_paths = compute_all_arastar_planner_improvements(
+      arastar_planner, original_obstacle_data, start, goal)
+  plot_results(arastar_improvement_paths, original_obstacle_data,
+               'ARA* improvements')
 
 
 if __name__ == '__main__':
