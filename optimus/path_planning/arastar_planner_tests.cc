@@ -166,4 +166,26 @@ TEST_F(
   EXPECT_THAT(planner_->epsilon(), Eq(1.));
 }
 
+TEST_F(
+    TestAraStarPlannerOn2DGrid,
+    GivenFeasibleProblem_WhenStoppedAfterEachSolution_EnsureCorrectNumberOfExpansions) {  // NOLINT
+  SetObstaclesAsInPaper();
+
+  int num_expansions = 0;
+  auto callback = [&num_expansions](UserCallbackEvent event) {
+    if (event == UserCallbackEvent::kSearch) {
+      ++num_expansions;
+    }
+    return event != UserCallbackEvent::kSolutionFound;
+  };
+  EXPECT_THAT(planner_->PlanPath(0, 41, callback, path_),
+              Eq(PlannerStatus::kSuccess));
+  do {
+    EXPECT_THAT(planner_->ReplanPath(0, {}, callback, path_),
+                Eq(PlannerStatus::kSuccess));
+  } while (IsGreater(planner_->epsilon(), 1.));
+  // As in an uninterrupted call to planner_->PlanPath.
+  EXPECT_THAT(num_expansions, Eq(22));
+}
+
 }  // namespace optimus
