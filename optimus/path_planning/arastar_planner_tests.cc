@@ -99,11 +99,20 @@ TEST_F(TestAraStarPlannerOn2DGrid,
        GivenFeasibleProblem_WhenPlanPath_EnsurePlanningSucceeds) {
   SetObstaclesAsInPaper();
 
-  EXPECT_THAT(planner_->PlanPath(0, 41, {}, path_),
+  int num_expansions = 0;
+  auto callback = [&num_expansions](UserCallbackEvent event) {
+    if (event == UserCallbackEvent::kSearch) {
+      ++num_expansions;
+    }
+    return true;
+  };
+
+  EXPECT_THAT(planner_->PlanPath(0, 41, callback, path_),
               Eq(PlannerStatus::kSuccess));
   expected_path_ = {0, 1, 2, 3, 4, 11, 17, 23, 29, 35, 41};
   EXPECT_THAT(path_, Eq(expected_path_));
   EXPECT_THAT(planner_->epsilon(), Eq(1.));
+  EXPECT_THAT(num_expansions, Eq(22));
 }
 
 TEST_F(TestAraStarPlannerOn2DGrid,
@@ -118,7 +127,11 @@ TEST_F(TestAraStarPlannerOn2DGrid,
        GivenFeasibleProblem_WhenPlanPathStopped_EnsureCorrectPath) {
   SetObstaclesAsInPaper();
 
-  auto callback = [](UserCallbackEvent event) {
+  int num_expansions = 0;
+  auto callback = [&num_expansions](UserCallbackEvent event) {
+    if (event == UserCallbackEvent::kSearch) {
+      ++num_expansions;
+    }
     return event != UserCallbackEvent::kSolutionFound;
   };
   EXPECT_THAT(planner_->PlanPath(0, 41, callback, path_),
@@ -127,6 +140,7 @@ TEST_F(TestAraStarPlannerOn2DGrid,
   expected_path_ = {0, 7, 13, 19, 24, 31, 32, 27, 22, 29, 35, 41};
   EXPECT_THAT(path_, Eq(expected_path_));
   EXPECT_THAT(planner_->epsilon(), Eq(planner_config_.epsilon_start));
+  EXPECT_THAT(num_expansions, Eq(12));
 }
 
 TEST_F(
