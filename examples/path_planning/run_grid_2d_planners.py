@@ -84,7 +84,7 @@ def compute_all_arastar_planner_improvements(planner, obstacle_data, start,
   names_to_paths = dict()
 
   def append_path(path):
-    names_to_paths[f'epsilon={planner.epsilon}'] = path
+    names_to_paths[f'epsilon={planner.epsilon:.2f}'] = path
 
   # Timings are likely to be quote off due to signifant callback oveheads.
   # The main point here is to illustrate path improvements.
@@ -119,6 +119,7 @@ def main():
   dstar_lite_path = plan_path(dstar_lite_planner, obstacle_data, start, goal)
 
   arastar_config = py_path_planning.AraStarPlannerConfig()
+  arastar_config.epsilon_decrease_rate = 0.05
   assert arastar_config.validate()
   arastar_planner = py_path_planning.AraStarGrid2DPlanner(
       env_config, arastar_config)

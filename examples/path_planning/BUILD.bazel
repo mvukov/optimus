@@ -19,7 +19,10 @@ genrule(
 pybind11_extension(
     name = "py_path_planning",
     srcs = [
+        "py_grid_2d_planners.cc",
         "py_path_planning.cc",
+        "py_planner.h",
+        "py_se2_planners.cc",
         ":example_primitives",
     ],
     copts = COPTS,
