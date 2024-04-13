@@ -2,6 +2,7 @@ load("@optimus_pip_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 load("//repositories:cc_defs.bzl", "COPTS")
 load("//repositories:python_extension.bzl", "pybind11_extension")
+load("//third_party/pytest:defs.bzl", "py_pytest_test")
 
 genrule(
     name = "example_primitives",
@@ -76,5 +77,15 @@ py_binary(
         ":utils",
         requirement("numpy"),
         requirement("plotly"),
+    ],
+)
+
+py_pytest_test(
+    name = "tests",
+    srcs = ["tests.py"],
+    deps = [
+        ":run_grid_2d_planners",
+        ":run_se2_planners",
+        ":visualize_primitives",
     ],
 )
