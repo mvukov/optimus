@@ -86,7 +86,7 @@ def compute_all_arastar_planner_improvements(planner, obstacle_data, start,
   def append_path(path):
     names_to_paths[f'epsilon={planner.epsilon:.2f}'] = path
 
-  # Timings are likely to be quote off due to signifant callback oveheads.
+  # Timings are likely to be quite off due to signifant callback overheads.
   # The main point here is to illustrate path improvements.
   path = plan_path(planner, obstacle_data, start, goal, callback)
   append_path(path)
