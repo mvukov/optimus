@@ -58,8 +58,8 @@ class AraStarPlanner
  private:
   void Reset();
   Key ComputeKey(int index) const;
-  PlannerStatus RunImprovePathLoop(const UserCallback& user_callback,
-                                   std::vector<int>& path);
+  PlannerStatus RunPathImprovementLoop(const UserCallback& user_callback,
+                                       std::vector<int>& path);
   PlannerStatus ImprovePath(const UserCallback& user_callback);
 
   AraStarPlannerConfig config_;
@@ -105,7 +105,7 @@ PlannerStatus AraStarPlanner<E>::PlanPathImpl(int start, int goal,
     return internal::ReconstructShortestPath(goal_, user_callback,
                                              indices_to_parent_indices_, path);
   }
-  return RunImprovePathLoop(user_callback, path);
+  return RunPathImprovementLoop(user_callback, path);
 }
 
 template <class E>
@@ -115,7 +115,7 @@ PlannerStatus AraStarPlanner<E>::ReplanPathImpl(
   if (goal_ == kInvalidIndex) {
     return PlannerStatus::kInternalError;
   }
-  return RunImprovePathLoop(user_callback, path);
+  return RunPathImprovementLoop(user_callback, path);
 }
 
 template <class E>
@@ -148,7 +148,7 @@ Key AraStarPlanner<E>::ComputeKey(int index) const {
 }
 
 template <class E>
-PlannerStatus AraStarPlanner<E>::RunImprovePathLoop(
+PlannerStatus AraStarPlanner<E>::RunPathImprovementLoop(
     const UserCallback& user_callback, std::vector<int>& path) {
   constexpr float kMinEpsilon = 1.f;
   while (IsGreater(epsilon_, kMinEpsilon)) {
@@ -162,16 +162,13 @@ PlannerStatus AraStarPlanner<E>::RunImprovePathLoop(
     inconsistent_indices_.clear();
     closed_indices_.clear();
 
-    switch (auto status = ImprovePath(user_callback); status) {
-      case PlannerStatus::kSuccess:
-        if (user_callback &&
-            !user_callback(UserCallbackEvent::kSolutionFound)) {
-          return internal::ReconstructShortestPath(
-              goal_, user_callback, indices_to_parent_indices_, path);
-        }
+    if (auto status = ImprovePath(user_callback);
+        status == PlannerStatus::kSuccess) {
+      if (user_callback && !user_callback(UserCallbackEvent::kSolutionFound)) {
         break;
-      default:
-        return status;
+      }
+    } else {
+      return status;
     }
   }
   return internal::ReconstructShortestPath(goal_, user_callback,
