@@ -31,7 +31,7 @@ jobs:
         with:
           python-version: "3.10"
       - name: Run pre-commit checks
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
   test:
     name: Run tests
     runs-on: ubuntu-22.04
@@ -54,7 +54,7 @@ jobs:
       # previously built artifacts to minimize build time. The more precise you are with
       # hashFiles sources the less work bazel will have to do.
       - name: Mount bazel caches
-        uses: actions/cache@v3.3.2
+        uses: actions/cache@v4.0.2
         with:
           path: |
             ~/.cache/bazel-repo
@@ -63,7 +63,7 @@ jobs:
       - name: bazel test //...
         env:
           # Bazelisk will download bazel to here, ensure it is cached between runs.
-          XDG_CACHE_HOME: ~/.cache/bazel-repo
+          XDG_CACHE_HOME: /github/home/.cache/bazel-repo
         working-directory: ${{ matrix.folder }}
         run: |
           bazel --bazelrc=$GITHUB_WORKSPACE/.github/workflows/ci.bazelrc --bazelrc=.bazelrc \

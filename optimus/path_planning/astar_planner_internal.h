@@ -11,26 +11,22 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include "pybind11/pybind11.h"
+#ifndef OPTIMUS_PATH_PLANNING_ASTAR_PLANNER_INTERNAL_H_
+#define OPTIMUS_PATH_PLANNING_ASTAR_PLANNER_INTERNAL_H_
+
+#include <vector>
+
+#include "boost/unordered/unordered_flat_map.hpp"
 
 #include "optimus/path_planning/planner_algorithm.h"
 
-namespace py = pybind11;
+namespace optimus::internal {
 
-namespace optimus {
+PlannerStatus ReconstructShortestPath(
+    int goal, const UserCallback& user_callback,
+    boost::unordered::unordered_flat_map<int, int> indices_to_parent_indices,
+    std::vector<int>& path);
 
-void initialize_grid_2d_planners(py::module_& m);
-void initialize_se2_planners(py::module_& m);
+}  // namespace optimus::internal
 
-PYBIND11_MODULE(py_path_planning, m) {
-  py::enum_<UserCallbackEvent>(m, "UserCallbackEvent")
-      .value("SEARCH", UserCallbackEvent::kSearch)
-      .value("RECONSTRUCTION", UserCallbackEvent::kReconstruction)
-      .value("SOLUTION_FOUND", UserCallbackEvent::kSolutionFound)
-      .export_values();
-
-  initialize_grid_2d_planners(m);
-  initialize_se2_planners(m);
-}
-
-}  // namespace optimus
+#endif  // OPTIMUS_PATH_PLANNING_ASTAR_PLANNER_INTERNAL_H_

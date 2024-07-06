@@ -34,6 +34,8 @@ cc_library(
     name = "path_planning",
     srcs = [
         "action_set_2d.cc",
+        "arastar_planner.cc",
+        "astar_planner_internal.cc",
         "grid_2d_planner.cc",
         "grid_utils.cc",
         "planner_algorithm.cc",
@@ -42,8 +44,11 @@ cc_library(
     ],
     hdrs = [
         "action_set_2d.h",
+        "arastar_grid_2d_planner.h",
+        "arastar_planner.h",
         "astar_grid_2d_planner.h",
         "astar_planner.h",
+        "astar_planner_internal.h",
         "astar_se2_planner.h",
         "common_utils.h",
         "dstar_lite_grid_2d_planner.h",
@@ -79,6 +84,7 @@ cc_test(
     size = "small",
     srcs = [
         "action_set_2d_tests.cc",
+        "arastar_planner_tests.cc",
         "astar_planner_tests.cc",
         "common_utils_tests.cc",
         "dstar_lite_planner_tests.cc",

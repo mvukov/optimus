@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
-
 import numpy
 
 
@@ -43,7 +41,7 @@ def to_tf(x: float, y: float, theta: float) -> numpy.ndarray:
                         [0, 0, 1]])
 
 
-def from_tf(tf: numpy.ndarray) -> Tuple[float, float, float]:
+def from_tf(tf: numpy.ndarray) -> tuple[float, float, float]:
   return tf[0, 2], tf[1, 2], numpy.arctan2(tf[1, 0], tf[0, 0])
 
 

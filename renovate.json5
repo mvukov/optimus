@@ -18,5 +18,5 @@
       groupName: "pre-commit-deps",
     },
   ],
-  schedule: ["every saturday"],
+  schedule: ["every 1 months on the first day of the month"],
 }

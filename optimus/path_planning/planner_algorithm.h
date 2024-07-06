@@ -33,6 +33,7 @@ enum class [[nodiscard]] PlannerStatus {
 enum class UserCallbackEvent {
   kSearch,
   kReconstruction,
+  kSolutionFound,
 };
 
 using UserCallback = std::function<bool(UserCallbackEvent)>;

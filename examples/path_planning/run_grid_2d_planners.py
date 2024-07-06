@@ -11,46 +11,48 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import matplotlib
 import numpy
-from matplotlib import pyplot
+import plotly.graph_objects as go
 
 from examples.path_planning import py_path_planning
 from examples.path_planning import utils
 
-matplotlib.use('QtAgg')
+
+def plot_results(names_to_paths: dict[str, numpy.ndarray], img: numpy.ndarray,
+                 title: str):
+  fig = go.Figure()
+  fig.add_trace(
+      go.Heatmap(z=img, colorscale='gray', reversescale=True, showscale=False))
+
+  for path_name, path in names_to_paths.items():
+    if path:
+
+      def draw_circle(p: numpy.ndarray, color: str, name: str):
+        fig.add_scatter(x=[p[0]],
+                        y=[p[1]],
+                        marker=dict(symbol='circle', size=10, color=color),
+                        showlegend=False,
+                        name=name)
+
+      draw_circle(path[0], 'tomato', 'start')
+      draw_circle(path[-1], 'lime', 'goal')
+
+      fig.add_scatter(x=[p[0] for p in path],
+                      y=[p[1] for p in path],
+                      mode='lines',
+                      name=f'{path_name} path')
+
+  fig.update_xaxes(autorange=True, title_text='x')
+  fig.update_yaxes(autorange=True, title_text='y', scaleanchor='x')
+  fig.layout.title = title
+  fig.show()
 
 
-def plot_results(path: numpy.ndarray, ax: matplotlib.axes.Axes,
-                 img: numpy.ndarray, color_map: str, title: str):
-  num_rows, num_cols = img.shape
-  ax.imshow(img,
-            cmap=pyplot.get_cmap(color_map),
-            origin='lower',
-            extent=[0, num_cols, 0, num_rows])
-
-  if path:
-    path_x = [p[0] for p in path]
-    path_y = [p[1] for p in path]
-    ax.plot(path_x, path_y)
-
-    def draw_circle(p, color):
-      ax.add_patch(pyplot.Circle((p[0], p[1]), 2, color=color))
-
-    draw_circle(path[0], color='tomato')
-    draw_circle(path[-1], color='lime')
-
-  ax.grid()
-  ax.set_xlabel('x')
-  ax.set_ylabel('y')
-  ax.set_title(title)
-
-
-def plan_path(planner, obstacle_data, start, goal):
+def plan_path(planner, obstacle_data, start, goal, callback=None):
   path = []
   try:
     planner.set_grid_2d(obstacle_data)
-    path = planner.plan_path(start, goal)
+    path = planner.plan_path(start, goal, callback)
     print(f'Planning time: {planner.planning_time:.3f} seconds')
     print(f'Number of expansions: {planner.num_expansions}')
     print(f'Path cost: {planner.path_cost:.3f}')
@@ -60,10 +62,10 @@ def plan_path(planner, obstacle_data, start, goal):
   return path
 
 
-def replan_path(planner, start, changed_positions):
+def replan_path(planner, start, changed_positions, callback=None):
   path = []
   try:
-    path = planner.replan_path(start, changed_positions)
+    path = planner.replan_path(start, changed_positions, callback)
     print(f'Replanning time: {planner.planning_time:.3f} seconds')
     print(f'Number of expansions: {planner.num_expansions}')
     print(f'Path cost: {planner.path_cost:.3f}')
@@ -71,6 +73,30 @@ def replan_path(planner, start, changed_positions):
   except RuntimeError as ex:
     print(ex)
   return path
+
+
+def compute_all_arastar_planner_improvements(planner, obstacle_data, start,
+                                             goal):
+
+  def callback(event):
+    return event != py_path_planning.UserCallbackEvent.SOLUTION_FOUND
+
+  names_to_paths = dict()
+
+  def append_path(path):
+    names_to_paths[f'epsilon={planner.epsilon:.2f}'] = path
+
+  # Timings are likely to be quite off due to signifant callback overheads.
+  # The main point here is to illustrate path improvements.
+  path = plan_path(planner, obstacle_data, start, goal, callback)
+  append_path(path)
+  while True:
+    path = replan_path(planner, start, [], callback)
+    append_path(path)
+    if numpy.isclose(planner.epsilon, 1.):
+      break
+
+  return names_to_paths
 
 
 def main():
@@ -92,6 +118,14 @@ def main():
   print('Running D*Lite')
   dstar_lite_path = plan_path(dstar_lite_planner, obstacle_data, start, goal)
 
+  arastar_config = py_path_planning.AraStarPlannerConfig()
+  arastar_config.epsilon_decrease_rate = 0.05
+  assert arastar_config.validate()
+  arastar_planner = py_path_planning.AraStarGrid2DPlanner(
+      env_config, arastar_config)
+  print('Running ARA*')
+  arastar_path = plan_path(arastar_planner, obstacle_data, start, goal)
+
   print('\n\nReplanning')
   # Simulate a moving robot: move a robot to a point approx. on the previously
   # found path.
@@ -111,28 +145,22 @@ def main():
   new_dstar_lite_path = replan_path(dstar_lite_planner, new_start,
                                     changed_positions)
 
-  _, ((ax1, ax2), (ax3, ax4)) = pyplot.subplots(2, 2, sharex=True, sharey=True)
-  plot_results(astar_path,
-               ax1,
-               original_obstacle_data,
-               color_map='Greys',
-               title='A*')
-  plot_results(dstar_lite_path,
-               ax2,
-               original_obstacle_data,
-               color_map='Greys',
-               title='D*Lite')
-  plot_results(new_astar_path,
-               ax3,
-               obstacle_data,
-               color_map='Greys',
-               title='Plan A*')
-  plot_results(new_dstar_lite_path,
-               ax4,
-               obstacle_data,
-               color_map='Greys',
-               title='Replan D*Lite')
-  pyplot.show()
+  plot_results(
+      {
+          'A*': astar_path,
+          'D*Lite': dstar_lite_path,
+          'ARA*': arastar_path
+      }, original_obstacle_data, 'Planning')
+  plot_results({
+      'A*': new_astar_path,
+      'D*Lite': new_dstar_lite_path
+  }, obstacle_data, 'Replanning')
+
+  print('\n\nARA* improvements')
+  arastar_improvement_paths = compute_all_arastar_planner_improvements(
+      arastar_planner, original_obstacle_data, start, goal)
+  plot_results(arastar_improvement_paths, original_obstacle_data,
+               'ARA* improvements')
 
 
 if __name__ == '__main__':

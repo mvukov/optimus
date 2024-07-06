@@ -19,6 +19,7 @@
 #include "boost/unordered/unordered_flat_map.hpp"
 #include "boost/unordered/unordered_flat_set.hpp"
 
+#include "optimus/path_planning/astar_planner_internal.h"
 #include "optimus/path_planning/planner_algorithm.h"
 #include "optimus/path_planning/priority_queue_utils.h"
 
@@ -43,8 +44,6 @@ class AStarPlanner
   PlannerStatus Expand(int goal, const UserCallback& user_callback);
   void UpdateIndex(int goal, int pivot, int neighbor,
                    float pivot_to_neighbor_cost);
-  bool ReconstructShortestPath(int goal, const UserCallback& user_callback,
-                               std::vector<int>& path);
 
   PriorityQueue open_queue_;
   std::vector<bool> closed_indices_;
@@ -74,10 +73,8 @@ PlannerStatus AStarPlanner<E>::PlanPathImpl(int start, int goal,
       status != PlannerStatus::kSuccess) {
     return status;
   }
-  if (!ReconstructShortestPath(goal, user_callback, path)) {
-    return PlannerStatus::kInternalError;
-  }
-  return PlannerStatus::kSuccess;
+  return internal::ReconstructShortestPath(goal, user_callback,
+                                           indices_to_parent_indices_, path);
 }
 
 template <class E>
@@ -153,40 +150,6 @@ void AStarPlanner<E>::UpdateIndex(int goal, int pivot, int neighbor,
         Key{new_g_value_ + this->env_->GetHeuristicCost(neighbor, goal),
             new_g_value_});
   }
-}
-
-template <class E>
-bool AStarPlanner<E>::ReconstructShortestPath(int goal,
-                                              const UserCallback& user_callback,
-                                              std::vector<int>& path) {
-  auto path_length = 1;
-  auto current = goal;
-  while (true) {
-    if (user_callback && !user_callback(UserCallbackEvent::kReconstruction)) {
-      return false;
-    }
-    auto parent = indices_to_parent_indices_.at(current);
-    if (parent == current) {
-      break;
-    }
-    ++path_length;
-    current = parent;
-  }
-
-  path.resize(path_length);
-  path.back() = goal;
-  auto offset = path.size() - 2;
-  current = goal;
-  while (true) {
-    auto parent = indices_to_parent_indices_.at(current);
-    if (parent == current) {
-      break;
-    }
-    path[offset] = parent;
-    --offset;
-    current = parent;
-  }
-  return true;
 }
 
 }  // namespace optimus

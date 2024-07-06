@@ -11,46 +11,53 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import matplotlib
 import numpy
-from matplotlib import pyplot
+import plotly.graph_objects as go
 
 from examples.path_planning import py_path_planning
 from examples.path_planning import utils
 
-matplotlib.use('QtAgg')
-
 Pose2D = py_path_planning.Pose2D
 
 
-def plot_arrow(ax: matplotlib.axes.Axes, t: Pose2D, arrow_scale: float = 0.5):
-  ax.arrow(t.x,
-           t.y,
-           arrow_scale * numpy.cos(t.theta),
-           arrow_scale * numpy.sin(t.theta),
-           width=0.05)
+def plot_results(names_to_paths: dict[str, numpy.ndarray], img: numpy.ndarray,
+                 title: str):
+  fig = go.Figure()
+  fig.add_trace(
+      go.Heatmap(z=img, colorscale='gray', reversescale=True, showscale=False))
 
+  for path_name, path in names_to_paths.items():
+    if path:
 
-def plot_results(path: numpy.ndarray, ax: matplotlib.axes.Axes,
-                 img: numpy.ndarray, color_map: str, title: str):
-  num_rows, num_cols = img.shape
-  ax.imshow(img,
-            cmap=pyplot.get_cmap(color_map),
-            origin='lower',
-            extent=[0, num_cols, 0, num_rows])
+      def plot_arrow(t: Pose2D, color: str, name: str):
 
-  if path:
-    path_x = [p.x for p in path]
-    path_y = [p.y for p in path]
-    ax.plot(path_x, path_y)
+        fig.add_scatter(x=[t.x],
+                        y=[t.y],
+                        marker=dict(symbol='circle', size=10, color=color),
+                        showlegend=False,
+                        name=name)
 
-    plot_arrow(ax, path[0])
-    plot_arrow(ax, path[-1])
+        arrow_scale = 2
+        fig.add_scatter(x=[t.x, t.x + arrow_scale * numpy.cos(t.theta)],
+                        y=[t.y, t.y + arrow_scale * numpy.sin(t.theta)],
+                        marker=dict(symbol='arrow',
+                                    size=10,
+                                    angleref='previous',
+                                    color='black'),
+                        showlegend=False)
 
-  ax.grid()
-  ax.set_xlabel('x')
-  ax.set_ylabel('y')
-  ax.set_title(title)
+      plot_arrow(path[0], 'tomato', 'start')
+      plot_arrow(path[-1], 'lime', 'goal')
+
+      fig.add_scatter(x=[p.x for p in path],
+                      y=[p.y for p in path],
+                      mode='lines',
+                      name=f'{path_name} path')
+
+  fig.update_xaxes(autorange=True, title_text='x')
+  fig.update_yaxes(autorange=True, title_text='y', scaleanchor='x')
+  fig.layout.title = title
+  fig.show()
 
 
 def plan_path(planner, obstacle_data, start, goal):
@@ -118,29 +125,14 @@ def main():
   new_dstar_lite_path = replan_path(dstar_lite_planner, new_start,
                                     changed_positions)
 
-  _, ((ax1, ax2), (ax3, ax4)) = pyplot.subplots(2, 2, sharex=True, sharey=True)
-  plot_results(astar_path,
-               ax1,
-               original_obstacle_data,
-               color_map='Greys',
-               title='A*')
-  plot_results(dstar_lite_path,
-               ax2,
-               original_obstacle_data,
-               color_map='Greys',
-               title='D*Lite')
-  plot_results(new_astar_path,
-               ax3,
-               obstacle_data,
-               color_map='Greys',
-               title='Plan A*')
-  plot_results(new_dstar_lite_path,
-               ax4,
-               obstacle_data,
-               color_map='Greys',
-               title='Replan D*Lite')
-
-  pyplot.show()
+  plot_results({
+      'A*': astar_path,
+      'D*Lite': dstar_lite_path
+  }, original_obstacle_data, 'Planning')
+  plot_results({
+      'A*': new_astar_path,
+      'D*Lite': new_dstar_lite_path
+  }, obstacle_data, 'Replanning')
 
 
 if __name__ == '__main__':

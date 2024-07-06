@@ -17,6 +17,7 @@
 #include <cmath>
 #include <functional>
 #include <utility>
+#include <vector>
 
 #include "boost/heap/fibonacci_heap.hpp"
 #include "boost/unordered/unordered_flat_map.hpp"
@@ -93,6 +94,15 @@ class PriorityQueue {
     } else {
       insert(index, key);
     }
+  }
+
+  std::vector<int> GetIndices() const {
+    std::vector<int> indices;
+    indices.reserve(hash_map_.size());
+    for (const auto& [index, _] : hash_map_) {
+      indices.push_back(index);
+    }
+    return indices;
   }
 
  private:

@@ -2,6 +2,7 @@ load("@optimus_pip_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 load("//repositories:cc_defs.bzl", "COPTS")
 load("//repositories:python_extension.bzl", "pybind11_extension")
+load("//third_party/pytest:defs.bzl", "py_pytest_test")
 
 genrule(
     name = "example_primitives",
@@ -19,7 +20,10 @@ genrule(
 pybind11_extension(
     name = "py_path_planning",
     srcs = [
+        "py_grid_2d_planners.cc",
         "py_path_planning.cc",
+        "py_planner.h",
+        "py_se2_planners.cc",
         ":example_primitives",
     ],
     copts = COPTS,
@@ -48,9 +52,8 @@ py_binary(
     deps = [
         ":py_path_planning",
         ":utils",
-        requirement("matplotlib"),
         requirement("numpy"),
-        requirement("PySide6"),
+        requirement("plotly"),
     ],
 )
 
@@ -59,8 +62,7 @@ py_binary(
     srcs = ["visualize_primitives.py"],
     deps = [
         "//optimus/path_planning:primitive_generator",
-        requirement("matplotlib"),
-        requirement("PySide6"),
+        requirement("plotly"),
     ],
 )
 
@@ -73,8 +75,17 @@ py_binary(
     deps = [
         ":py_path_planning",
         ":utils",
-        requirement("matplotlib"),
         requirement("numpy"),
-        requirement("PySide6"),
+        requirement("plotly"),
+    ],
+)
+
+py_pytest_test(
+    name = "tests",
+    srcs = ["tests.py"],
+    deps = [
+        ":run_grid_2d_planners",
+        ":run_se2_planners",
+        ":visualize_primitives",
     ],
 )

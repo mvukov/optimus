@@ -8,8 +8,8 @@ def optimus_repositories():
     maybe(
         http_archive,
         name = "bazel_skylib",
-        urls = ["https://github.com/bazelbuild/bazel-skylib/releases/download/1.5.0/bazel-skylib-1.5.0.tar.gz"],
-        sha256 = "cd55a062e763b9349921f0f5db8c3933288dc8ba4f76dd9416aac68acee3cb94",
+        urls = ["https://github.com/bazelbuild/bazel-skylib/releases/download/1.7.1/bazel-skylib-1.7.1.tar.gz"],
+        sha256 = "bc283cdfcd526a52c3201279cda4bc298652efa898b10b4db0837dc51652756f",
     )
 
     maybe(
@@ -32,17 +32,17 @@ def optimus_repositories():
     maybe(
         http_archive,
         name = "com_github_nelhage_rules_boost",
-        sha256 = "63efbe31080c071405383a281290ab9623550316054fb80a4984a97030526236",
-        strip_prefix = "rules_boost-a1f5ed4f9ca3971b107ad61f38ace8aef83dc54e",
-        urls = ["https://github.com/nelhage/rules_boost/archive/a1f5ed4f9ca3971b107ad61f38ace8aef83dc54e.zip"],
+        sha256 = "bbb141774985cb57dcbb64fb367270227a0b1aa5877432ff9c678e3ad4e863bb",
+        strip_prefix = "rules_boost-42859edabb494c29d27c91b59d3bb67b504588b9",
+        urls = ["https://github.com/nelhage/rules_boost/archive/42859edabb494c29d27c91b59d3bb67b504588b9.zip"],
     )
 
     maybe(
         http_archive,
         name = "rules_python",
-        sha256 = "e85ae30de33625a63eca7fc40a94fea845e641888e52f32b6beea91e8b1b2793",
-        strip_prefix = "rules_python-0.27.1",
-        url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.27.1.tar.gz",
+        sha256 = "5bcfa3852444d084b1d3262714cec151b797648d4d444ea9895c7c7ed79cd715",
+        strip_prefix = "rules_python-0.33.1",
+        url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.33.1.tar.gz",
     )
 
     maybe(
@@ -56,25 +56,25 @@ def optimus_repositories():
     maybe(
         http_archive,
         name = "com_github_google_benchmark",
-        sha256 = "6bc180a57d23d4d9515519f92b0c83d61b05b5bab188961f36ac7b06b0d9e9ce",
-        strip_prefix = "benchmark-1.8.3",
-        urls = ["https://github.com/google/benchmark/archive/refs/tags/v1.8.3.tar.gz"],
+        sha256 = "3e7059b6b11fb1bbe28e33e02519398ca94c1818874ebed18e504dc6f709be45",
+        strip_prefix = "benchmark-1.8.4",
+        urls = ["https://github.com/google/benchmark/archive/refs/tags/v1.8.4.tar.gz"],
     )
 
     maybe(
         http_archive,
         name = "pybind11",
         build_file = "//repositories:pybind11.BUILD.bazel",
-        sha256 = "d475978da0cdc2d43b73f30910786759d593a9d8ee05b1b6846d1eb16c6d2e0c",
-        strip_prefix = "pybind11-2.11.1",
-        url = "https://github.com/pybind/pybind11/archive/v2.11.1.tar.gz",
+        sha256 = "bf8f242abd1abcd375d516a7067490fb71abd79519a282d22b6e4d19282185a7",
+        strip_prefix = "pybind11-2.12.0",
+        url = "https://github.com/pybind/pybind11/archive/v2.12.0.tar.gz",
     )
 
     maybe(
         http_archive,
         name = "stb",
-        sha256 = "a8e507f987c812fe87f122f0ab4dc3049905f87084ba85375ef97248fc7e6326",
-        strip_prefix = "stb-f4a71b13373436a2866c5d68f8f80ac6f0bc1ffe",
-        urls = ["https://github.com/nothings/stb/archive/f4a71b13373436a2866c5d68f8f80ac6f0bc1ffe.tar.gz"],
+        sha256 = "b01aa93e1a968aed55f43e072c98ee401d2f20e897aabdb1a166c7166886ed11",
+        strip_prefix = "stb-013ac3beddff3dbffafd5177e7972067cd2b5083",
+        urls = ["https://github.com/nothings/stb/archive/013ac3beddff3dbffafd5177e7972067cd2b5083.tar.gz"],
         build_file = "//repositories:stb.BUILD.bazel",
     )
