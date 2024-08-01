@@ -40,9 +40,9 @@ def optimus_repositories():
     maybe(
         http_archive,
         name = "rules_python",
-        sha256 = "5bcfa3852444d084b1d3262714cec151b797648d4d444ea9895c7c7ed79cd715",
-        strip_prefix = "rules_python-0.33.1",
-        url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.33.1.tar.gz",
+        sha256 = "778aaeab3e6cfd56d681c89f5c10d7ad6bf8d2f1a72de9de55b23081b2d31618",
+        strip_prefix = "rules_python-0.34.0",
+        url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.34.0.tar.gz",
     )
 
     maybe(
