@@ -1,8 +1,6 @@
 {
-  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  extends: [
-    'config:recommended',
-  ],
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: ["config:recommended"],
   dependencyDashboard: true,
   dockerfile: {
     enabled: false,
@@ -10,22 +8,16 @@
   pip_requirements: {
     enabled: false,
   },
-  'pre-commit': {
+  "pre-commit": {
     enabled: true,
   },
   packageRules: [
     {
-      matchManagers: [
-        'pre-commit',
-      ],
-      groupName: 'pre-commit-deps',
-      matchPackageNames: [
-        '*',
-      ],
+      matchManagers: ["pre-commit"],
+      groupName: "pre-commit-deps",
+      matchPackageNames: ["*"],
     },
   ],
-  schedule: [
-    'every 1 months on the first day of the month',
-  ],
+  schedule: ["every 1 months on the first day of the month"],
   automerge: true,
 }
