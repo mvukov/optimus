@@ -1,6 +1,6 @@
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
-  extends: ["config:base"],
+  extends: ["config:recommended"],
   dependencyDashboard: true,
   dockerfile: {
     enabled: false,
@@ -14,8 +14,8 @@
   packageRules: [
     {
       matchManagers: ["pre-commit"],
-      matchPackagePatterns: ["*"],
       groupName: "pre-commit-deps",
+      matchPackageNames: ["*"],
     },
   ],
   schedule: ["every 1 months on the first day of the month"],
