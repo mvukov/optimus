@@ -73,8 +73,8 @@ def optimus_repositories():
     maybe(
         http_archive,
         name = "stb",
-        sha256 = "4ef16a0e174bc33887fec582b01ca239155466e0b48081cc27304298556bed47",
-        strip_prefix = "stb-28d546d5eb77d4585506a20480f4de2e706dff4c",
-        urls = ["https://github.com/nothings/stb/archive/28d546d5eb77d4585506a20480f4de2e706dff4c.tar.gz"],
+        sha256 = "e4e3bba9c572a4a4148373a914d88ea0f0d11de8cc2c66739926e7eca0223319",
+        strip_prefix = "stb-31c1ad37456438565541f4919958214b6e762fb4",
+        urls = ["https://github.com/nothings/stb/archive/31c1ad37456438565541f4919958214b6e762fb4.tar.gz"],
         build_file = "//repositories:stb.BUILD.bazel",
     )
